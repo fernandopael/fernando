@@ -8942,7 +8942,7 @@ function updatePlayerStats(player, teamStats) {
         stats = JSON.parse(localStorage.getItem(authArray[player.id]));
     }
 
-    var pointsForWin = 6; // +6 Pontos 
+    var pointsForWin = 3; // +3 Pontos
     var pointsForGoal = 1; // +1 Ponto 
     var pointsForAssist = 1; // +1 Ponto
     var pointsForCS = 1; // +1 Ponto
@@ -10108,8 +10108,8 @@ room.onPlayerChat = function (player, message) {
                                                                                                                     stats.pontos >= 2700 && stats.pontos < 2800 ? "🤖𓊈𝐑𝐨𝐛𝐨𝐳ã𝐨𓊉" :
                                                                                                                         stats.pontos >= 2800 && stats.pontos < 2900 ? "👦🏿𓊈𝐏𝐞𝐥é𓊉" :
                                                                                                                             stats.pontos >= 2900 && stats.pontos < 3000 ? "👽𓊈𝗘𝘅𝘁𝗿𝗮𝘁𝗲𝗿𝗿𝗲𝘀𝘁𝗿𝗲𓊉" :
-                                                                                                                                stats.pontos >= 3000 && stats.pontos < 3200 ? "🤴𓊈Rei𓊉" :
-                                                                                                                                    stats.pontos >= 3200 && stats.pontos ? "🐐𓊈Goat𓊉" : ""
+                                                                                                                                stats.pontos >= 3000 && stats.pontos < 3100 ? "🤴𓊈Rei𓊉" :
+                                                                                                                                    stats.pontos >= 3100 && stats.pontos ? "🐐𓊈Goat𓊉" : ""
     }
 
     if (message.length > 100 && player.admin == false && tipoVip < 3) {
