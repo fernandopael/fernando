@@ -1,6 +1,6 @@
 var testMode = false; // Caso for testar alguma novidade na sala, defina como "true". Caso contrário deixe "false".
-var modeRoom = "normal"; // Defina como "flash" ou "normal" para o tempo/score da sala serem reformulados automaticamente
-var roomName;
+var modeRoom = "flash"; // Defina como "flash" ou "normal" para o tempo/score da sala serem reformulados automaticamente
+var roomName; 
 var maxPlayers;
 var publicRoom;
 var timeLimit;
@@ -49,6 +49,7 @@ if (testMode === true) {
     publicRoom = false;
     maxPlayers = 5;
 } else {
+    roomName = "VorteX 🌀 | Flash | 3x3";
     publicRoom = true;
     maxPlayers = 30;
 }
