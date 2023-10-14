@@ -49,7 +49,7 @@ if (testMode === true) {
     publicRoom = false;
     maxPlayers = 5;
 } else {
-    roomName = "VorteX 🌀 | Flash | 3x3";
+    roomName = "VorteX 🌀 | Flash | 3x3  🎃EVENTO HALLOWEEN🎃";
     publicRoom = true;
     maxPlayers = 30;
 }
@@ -9425,7 +9425,7 @@ room.onPlayerJoin = async function (player) {
     authArray[player.id] = player.auth
 
     room.sendAnnouncement(
-        `👋 Olá, ${player.name}! Seja Bem-vindo a VorteX Temporada 2.          Digite !ajuda para ver os comandos!\nLink do nosso discord -> ${discord}`,
+        `👋 Olá, ${player.name}! Seja Bem-vindo a VorteX Temporada 3, 🎃Evento Halloween🎃 Rolando.          Digite !ajuda para ver os comandos!\nLink do nosso discord -> ${discord}`,
         player.id,
         welcomeColor,
         'bold',
