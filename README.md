@@ -10994,7 +10994,6 @@ room.onPlayerChat = function (player, message) {
                                                                                                                             stats.pontos >= 2900 && stats.pontos < 3000 ? "👽𓊈𝗘𝘅𝘁𝗿𝗮𝘁𝗲𝗿𝗿𝗲𝘀𝘁𝗿𝗲𓊉" :
                                                                                                                                 stats.pontos >= 3000 && stats.pontos < 3100 ? "🤴𓊈Rei𓊉" :
                                                                                                                                     stats.pontos >= 3100 && stats.pontos ? "🐐𓊈Goat𓊉" : ""
-                                                                                                                                        stats.pontos >= 3200 && stats.pontos ? ""
     }
 
     if (message.length > 100 && player.admin == false && tipoVip < 3) {
